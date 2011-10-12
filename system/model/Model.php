@@ -34,13 +34,33 @@ abstract class Model
 
 	public function GetById($id)
 	{
-		return $this->GetBy($this->IdName, $id);
+		$rows = $this->GetBy($this->IdName, $id);
+		if(count($rows) > 0)
+			return $rows[0];
+		return null;
 	}
 
 	public function GetBy($col_name, $value)
 	{
 		$sql = "select * from $this->TableName where $col_name = ?";
 		return $this->DoQuery($sql, array($value));
+	}
+
+	public function GetAllLike($criterias, $empty_gets_all = true)
+	{
+		if(!is_array($criterias) || count($criterias) == 0)
+			return $empty_gets_all ? $this->GetAll() : null;
+
+		$sql = "select * from $this->TableName where ";
+		$params = array();
+		foreach($criterias as $column => $criteria)
+		{
+			$sql .= $column . " like ? or ";
+			$params[] = "%$criteria%";
+		}
+
+		$sql = substr($sql, 0, strlen($sql) - 3);
+		return $this->DoQuery($sql, $params);
 	}
 
 	public function Insert($values)
