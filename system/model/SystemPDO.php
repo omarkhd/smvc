@@ -4,18 +4,24 @@ namespace system\model;
 
 class SystemPDO
 {
-	private static $Instance = null;
-
+	//private static $Instance = null;
 	private function __construct() {}
+	private static $Connections = array();
 
-	private static function InstancePDO()
+	private static function InstancePDO($connection)
 	{
 		$registry = \system\base\RequestRegistry::GetInstance();
-		$host = $registry->Get("db_host");
-		$user = $registry->Get("db_user");
-		$pass = $registry->Get("db_password");
-		$name = $registry->Get("db_name");
-		$set_names = $registry->Get("set_names");
+		$databases = $registry->Get("databases");
+
+		if(!isset($databases[$connection]))
+			return null;
+		
+		$db_info = $databases[$connection];
+		$host = $db_info["host"];
+		$user = $db_info["user"];
+		$pass = $db_info["password"];
+		$name = $db_info["name"];
+		$set_names = $db_info["set_names"];
 
 		$dsn = "mysql:dbname=$name;host=$host";
 		$pdo = new \PDO($dsn, $user, $pass);
@@ -23,11 +29,16 @@ class SystemPDO
 		return $pdo;
 	}
 
-	public static function GetInstance()
+	public static function GetInstance($conn)
 	{
-		if(self::$Instance == null)
-			self::$Instance = self::InstancePDO();
+		if(!isset(self::$Connections[$conn]) || self::$Connections[$conn] == null)
+			self::$Connections[$conn] = self::InstancePDO($conn);
 
-		return self::$Instance;
+		return self::$Connections[$conn];
+	}
+
+	public static function CloseConnections()
+	{
+		self::$Connections = null;
 	}
 }

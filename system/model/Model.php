@@ -16,11 +16,11 @@ abstract class Model
 	protected $IdName;
 	protected $Db;
 
-	public function __construct($table_name, $id_name = "Id")
+	public function __construct($table_name, $id_name = "Id", $connection = "default")
 	{
 		$this->TableName = $table_name;
 		$this->IdName = $id_name;
-		$this->Db = SystemPDO::GetInstance();
+		$this->Db = SystemPDO::GetInstance($connection);
 	}
 
 	public function GetAll($start = null, $count = null)

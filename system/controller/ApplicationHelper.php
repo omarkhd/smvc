@@ -12,13 +12,11 @@ class ApplicationHelper
 		if($registry == null)
 			$registry = \system\base\RequestRegistry::GetInstance();
 
-		//now load the config files
-		
+		//now check and load configuration
 		$config_dir = $_SERVER["DOCUMENT_ROOT"] . "/application/config";
-		//$config_dir = "config";
-		include_once $config_dir . "/options.php";
+		require_once $config_dir . "/databases.php";
 
-		foreach($OPTIONS as $option => $value)
-			$registry->Set($option, $value);
+		if(isset($databases) && is_array($databases))
+			$registry->Set("databases", $databases);
 	}
 }

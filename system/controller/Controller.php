@@ -25,5 +25,6 @@ class Controller
 		$resolver = new \system\command\CommandResolver();
 		$cmd = $resolver->GetCommand($request);
 		$cmd->Execute();
+		\system\model\SystemPDO::CloseConnections();
 	}
 }
