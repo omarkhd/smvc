@@ -34,11 +34,21 @@ class CommandResolver
 
 	private static function GenerateClassName($cmd)
 	{
-		$cmd_name = "";
-		foreach(explode("_", $cmd) as $word)
-			$cmd_name .= ucwords($word);
-		$cmd_name .= "Command";
-		$cmd_name = "\\application\\commands\\" . $cmd_name;
-		return $cmd_name;
+		$parts = explode(':', $cmd); //components of the command, namespaces (:) and classname
+		$cmd_part = $parts[count($parts) - 1]; //last part of the command is the class name
+
+		//constructing the namespace
+		$ns = '\\application\\commands';
+		for($i = 0; $i < count($parts) - 1; $i++)
+			$ns .= '\\' . $parts[$i];
+		$ns .= '\\';
+
+		//constructing the classname
+		$classname = '';
+		foreach(explode("_", $cmd_part) as $word)
+			$classname .= ucwords($word);
+		$classname .= "Command";
+
+		return $ns . $classname;
 	}
 }
