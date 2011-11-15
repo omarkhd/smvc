@@ -19,4 +19,21 @@ class ApplicationHelper
 		if(isset($databases) && is_array($databases))
 			$registry->Set("databases", $databases);
 	}
+
+	public static function LoadHelper($helper)
+	{
+		/*
+		 *	loads a helper giving relevance to the
+		 *	user's defined helpers
+		 */
+
+		$st_path = $_SERVER["DOCUMENT_ROOT"] . '/application/helpers/' . $helper . '.php';
+		$nd_path = $_SERVER["DOCUMENT_ROOT"] . '/system/helpers/' . $helper . '.php';
+		if(file_exists($st_path))
+			include_once $st_path;
+		else if(file_exists($nd_path))
+			include_once $nd_path;
+		else
+			throw new \Exception("The helper <$helper> was not found");
+	}
 }

@@ -17,13 +17,14 @@ class SystemPDO
 			return null;
 		
 		$db_info = $databases[$connection];
+		$driver = $db_info["driver"];
 		$host = $db_info["host"];
 		$user = $db_info["user"];
 		$pass = $db_info["password"];
 		$name = $db_info["name"];
 		$set_names = $db_info["set_names"];
 
-		$dsn = "mysql:dbname=$name;host=$host";
+		$dsn = "$driver:dbname=$name;host=$host";
 		$pdo = new \PDO($dsn, $user, $pass);
 		$pdo->exec("set names '$set_names'");
 		return $pdo;
