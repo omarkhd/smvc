@@ -63,7 +63,7 @@ abstract class Model
 		return $this->DoQuery($sql, $params);
 	}
 
-	public function Insert($values)
+	public function Insert(array $values)
 	{
 		if(!is_array($values))
 			return false;
@@ -102,7 +102,7 @@ abstract class Model
 		return $this->DoNonQuery($sql, array($new, $criteria));
 	}
 
-	protected function DoQuery($sql, $params = null)
+	protected function DoQuery($sql, array $params = null)
 	{
 		$statement = $this->Db->prepare($sql);
 		$this->SetParameters($statement, $params);
@@ -110,7 +110,7 @@ abstract class Model
 		return $statement->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
-	protected function DoScalar($sql, $params = null)
+	protected function DoScalar($sql, array $params = null)
 	{
 		$statement = $this->Db->prepare($sql);
 		$this->SetParameters($statement, $params);
@@ -119,7 +119,7 @@ abstract class Model
 		return $record[0][0];
 	}
 
-	protected function DoNonQuery($sql, $params)
+	protected function DoNonQuery($sql, array $params = null)
 	{
 		$statement = $this->Db->prepare($sql);
 		$this->SetParameters($statement, $params);
@@ -127,7 +127,7 @@ abstract class Model
 		return $statement->rowCount();
 	}
 
-	protected function SetParameters(\PDOStatement $statement, $params)
+	protected function SetParameters(\PDOStatement $statement, array $params =  null)
 	{
 		if(!is_array($params))
 			return;
