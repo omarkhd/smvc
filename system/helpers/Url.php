@@ -4,11 +4,11 @@ class Url
 {
 	private static $_base = null;
 
-	public static function Base($more = null)
+	public static function base($more = null)
 	{
 		if(self::$_base == null)
 		{
-			$r = \system\base\RequestRegistry::GetInstance();
+			$r = \system\base\RequestRegistry::getInstance();
 			self::$_base = $r->Get("base_url");
 		}
 

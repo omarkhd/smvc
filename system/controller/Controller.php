@@ -6,25 +6,25 @@ class Controller
 {
 	private function __construct() {}
 
-	public static function Run() //the entry point for our system
+	public static function run() //the entry point for our system
 	{
 		$instance = new self();
-		$instance->Init();
-		$instance->HandleRequest();
+		$instance->init();
+		$instance->handleRequest();
 	}
 
-	private function Init()
+	private function init()
 	{
 		//initializing the registry, by default the request registry
-		\system\controller\ApplicationHelper::InitRegistry();
+		\system\controller\ApplicationHelper::initRegistry();
 	}
 
-	private function HandleRequest()
+	private function handleRequest()
 	{
 		$request = new \system\controller\Request();
 		$resolver = new \system\command\CommandResolver();
-		$cmd = $resolver->GetCommand($request);
-		$cmd->Execute();
-		\system\model\SystemPDO::CloseConnections();
+		$cmd = $resolver->getCommand($request);
+		$cmd->execute();
+		\system\model\DatabaseFactory::closeConnections();
 	}
 }

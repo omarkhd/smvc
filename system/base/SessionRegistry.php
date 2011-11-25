@@ -10,35 +10,35 @@ namespace system\base;
 
 class SessionRegistry extends Registry
 {
-	private static $Instance = null;
+	private static $instance = null;
 	
 	private function __construct()
 	{
 		session_start();
 	}
 
-	public function Clear()
+	public function clear()
 	{
 		$_SESSION = array();
 	}
 
-	public static function DestroySession()
+	public static function destroySession()
 	{
 		$_SESSION = array();
 		session_unset();
 		session_destroy();
-		self::$Instance = null;
+		self::$instance = null;
 	}
 
-	public static function GetInstance()
+	public static function getInstance()
 	{
-		if(self::$Instance == null)
-			self::$Instance = new SessionRegistry();
+		if(self::$instance == null)
+			self::$instance = new SessionRegistry();
 
-		return self::$Instance;
+		return self::$instance;
 	}
 
-	public function Get($key)
+	public function get($key)
 	{
 		if(isset($_SESSION[$key]))
 			return unserialize($_SESSION[$key]);
@@ -46,7 +46,7 @@ class SessionRegistry extends Registry
 		return null;
 	}
 
-	public function Set($key, $value)
+	public function set($key, $value)
 	{
 		$_SESSION[$key] = serialize($value);
 	}

@@ -4,34 +4,36 @@ namespace system\view;
 
 class View
 {
-	private $ViewName;
-	private $ViewVars;
-	public static $Debug = false;
+	private $name;
+	private $vars;
+	public static $debug = false;
 
 	public function __construct($name = "index")
 	{
-		$this->ViewName = $name;
+		$this->name = $name;
 	}
 
-	public function Display($vars = null)
+	public function display(array $vars = null, $html = true)
 	{
-		if($vars != null && !is_array($vars))
-			throw new Exception("The var passed to View::Display should be an array");
-		$this->ViewVars = $vars;
+		$this->vars = $vars;
 
-		if(self::$Debug)
+		if(self::$debug)
 			var_dump($vars);
 
-		$this->Load($this->ViewName);
+		if($this->vars != null && $html)
+			foreach($this->vars as $key => $val)
+				$this->vars[$key] = htmlentities($val);
+
+		$this->load($this->name);
 	}
 
-	private function Load($view_name)
+	private function load($view_name)
 	{
-		$vars = $this->ViewVars;
+		$vars = $this->vars;
 		if($vars != null)
 			foreach($vars as $var => $val)
 				$$var = $val;
 		
-		include $_SERVER["DOCUMENT_ROOT"] . "/application/views/" . $view_name . ".php";
+		include 'application/views/' . $view_name . '.php';
 	}
 }

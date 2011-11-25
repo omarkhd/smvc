@@ -6,12 +6,12 @@ class SystemPDO
 {
 	//private static $Instance = null;
 	private function __construct() {}
-	private static $Connections = array();
+	private static $connections = array();
 
-	private static function InstancePDO($connection)
+	private static function instancePDO($connection)
 	{
-		$registry = \system\base\RequestRegistry::GetInstance();
-		$databases = $registry->Get("databases");
+		$registry = \system\base\RequestRegistry::getInstance();
+		$databases = $registry->get("databases");
 
 		if(!isset($databases[$connection]))
 			return null;
@@ -30,16 +30,16 @@ class SystemPDO
 		return $pdo;
 	}
 
-	public static function GetInstance($conn)
+	public static function getInstance($conn)
 	{
-		if(!isset(self::$Connections[$conn]) || self::$Connections[$conn] == null)
-			self::$Connections[$conn] = self::InstancePDO($conn);
+		if(!isset(self::$connections[$conn]) || self::$connections[$conn] == null)
+			self::$connections[$conn] = self::instancePDO($conn);
 
-		return self::$Connections[$conn];
+		return self::$connections[$conn];
 	}
 
-	public static function CloseConnections()
+	public static function closeConnections()
 	{
-		self::$Connections = null;
+		self::$connections = null;
 	}
 }

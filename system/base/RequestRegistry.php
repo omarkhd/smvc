@@ -15,15 +15,15 @@ class RequestRegistry extends Registry
 
 	private function __construct()
 	{
-		$this->Clear();
+		$this->clear();
 	}
 
-	public function Clear()
+	public function clear()
 	{
-		$this->Container = array();
+		$this->container = array();
 	}
 
-	public static function GetInstance()
+	public static function getInstance()
 	{
 		if(self::$Instance == null)
 			self::$Instance = new self();
@@ -31,7 +31,7 @@ class RequestRegistry extends Registry
 		return self::$Instance;
 	}
 
-	public function Get($key)
+	public function get($key)
 	{
 		if(isset($this->Container[$key]))
 			return $this->Container[$key];
@@ -39,7 +39,7 @@ class RequestRegistry extends Registry
 		return null;
 	}
 
-	public function Set($key, $value)
+	public function set($key, $value)
 	{
 		$this->Container[$key] = $value;
 	}

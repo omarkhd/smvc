@@ -4,9 +4,9 @@ namespace application\commands;
 
 class DefaultCommand extends \system\command\Command
 {
-	public function Execute()
+	public function execute()
 	{
 		$view = new \system\view\View("default");
-		$view->Display();
+		$view->display();
 	}
 }

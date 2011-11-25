@@ -4,12 +4,12 @@ namespace system\command;
 
 abstract class Command
 {
-	public $ContextRequest = null;
+	public $context = null;
 	public final function __construct() {}
-	public abstract function Execute();
+	public abstract function execute();
 
-	public function LoadHelper($helper_name)
+	public function loadHelper($helper_name)
 	{
-		\system\controller\ApplicationHelper::LoadHelper($helper_name);
+		\system\controller\ApplicationHelper::loadHelper($helper_name);
 	}
 }

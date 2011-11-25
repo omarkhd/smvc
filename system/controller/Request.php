@@ -4,28 +4,28 @@ namespace system\controller;
 
 class Request
 {
-	private $Container;
-	private $Messages;
+	private $container;
+	private $messages;
 
 	public function __construct()
 	{
-		$this->Container = $_REQUEST;
+		$this->container = $_REQUEST;
 	}
 
-	public function Get($key)
+	public function get($key)
 	{
-		if(isset($this->Container[$key]))
-			return $this->Container[$key];
+		if(isset($this->container[$key]))
+			return $this->container[$key];
 		return null;
 	}
 
-	public function AddMessage($msg)
+	public function addMessage($msg)
 	{
-		$this->Messages[] = $msg;
+		$this->messages[] = $msg;
 	}
 
-	public function GetMessages()
+	public function getMessages()
 	{
-		return $this->Messages;
+		return $this->messages;
 	}
 }

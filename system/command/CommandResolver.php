@@ -4,35 +4,35 @@ namespace system\command;
 
 class CommandResolver
 {
-	private static $DefaultCommand = "Default";
-	private static $ErrorCommand = "Error";
+	private static $defaultCommand = "Default";
+	private static $errorCommand = "Error";
 
-	public function GetCommand(\system\controller\Request $request)
+	public function getCommand(\system\controller\Request $request)
 	{
-		$cmd = $request->Get("cmd");
+		$cmd = $request->get("cmd");
 		$classname = null;
 
+		//generating the class name based on the expected parameters
 		if($cmd == null)
-			$classname = self::GenerateClassName(self::$DefaultCommand);
-
+			$classname = self::generateClassName(self::$defaultCommand);
 		else
-			$classname = self::GenerateClassName($cmd);
+			$classname = self::generateClassName($cmd);
 
+		//verifying the generated class againts the requirements
 		$cmd_obj = null;
 		if(@class_exists($classname) && @is_subclass_of($classname, '\system\command\Command'))
 			$cmd_obj = new $classname();
-
-		else
-		{
-			$def_class = self::GenerateClassName(self::$ErrorCommand);
+			
+		else {
+			$def_class = self::generateClassName(self::$errorCommand);
 			$cmd_obj = new $def_class();
 		}
 
-		$cmd_obj->ContextRequest = $request;
+		$cmd_obj->context = $request;
 		return $cmd_obj;
 	}
 
-	private static function GenerateClassName($cmd)
+	private static function generateClassName($cmd)
 	{
 		$parts = explode(':', $cmd); //components of the command, namespaces (:) and classname
 		$cmd_part = $parts[count($parts) - 1]; //last part of the command is the class name

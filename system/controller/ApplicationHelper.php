@@ -7,44 +7,44 @@ class ApplicationHelper
 	private function __construct() {}
 	private static $ConfDir = null;
 
-	public static function InitRegistry(\system\base\Registry $registry = null)
+	public static function initRegistry(\system\base\Registry $registry = null)
 	{
 		//if no registry is specified, a request registry is used
 		if($registry == null)
-			$registry = \system\base\RequestRegistry::GetInstance();
+			$registry = \system\base\RequestRegistry::getInstance();
 
 		if(self::$ConfDir == null)
-			self::$ConfDir = $_SERVER["DOCUMENT_ROOT"] . "/application/config";
+			self::$ConfDir = 'application/config';
 
-		self::LoadConfig($registry);
-		self::LoadDatabaseConfig($registry);
+		self::loadConfig($registry);
+		self::loadDatabaseConfig($registry);
 	}
 
-	private static function LoadConfig(\system\base\Registry $r)
+	private static function loadConfig(\system\base\Registry $r)
 	{
 		require_once self::$ConfDir . '/settings.php';
-		$r->Set('base_url', $base_url);
+		$r->set('base_url', $base_url);
 	}
 
-	private static function LoadDatabaseConfig(\system\base\Registry $r)
+	private static function loadDatabaseConfig(\system\base\Registry $r)
 	{
 		//now check and load configuration
 		require_once self::$ConfDir . "/databases.php";
 		
 		if(isset($databases) && is_array($databases))
-			$r->Set("databases", $databases);
+			$r->set("databases", $databases);
 	}
 
-	public static function LoadHelper($helper)
+	public static function loadHelper($helper)
 	{
 		/*
 		 *	loads a helper giving relevance to the
 		 *	user's defined helpers
 		 */
 
-		$st_path = $_SERVER["DOCUMENT_ROOT"] . '/application/helpers/' . $helper . '.php';
-		$nd_path = $_SERVER["DOCUMENT_ROOT"] . '/application/helpers/' . $helper . '.inc';
-		$rd_path = $_SERVER["DOCUMENT_ROOT"] . '/system/helpers/' . $helper . '.php';
+		$st_path = 'application/helpers/' . $helper . '.php';
+		$nd_path = 'application/helpers/' . $helper . '.inc';
+		$rd_path = 'system/helpers/' . $helper . '.php';
 		if(file_exists($st_path))
 			include_once $st_path;
 		else if(file_exists($nd_path))

@@ -1,57 +1,51 @@
 <?php
-/*
-	actualmente todas los métodos utilizados están hechos para mysql
-	por falta de tiempo
-	
-	aquí no se revisa por sql injection ni nada de eso, son algunas
-	consultas generadas automáticamente, los checks de inputs deben realizarse
-	en el controlador(comando) correspondiente
-*/
 
 namespace system\model;
 
 abstract class Model
 {
-	protected $TableName;
-	protected $IdName;
-	protected $Db;
+	protected $tableName;
+	protected $idName;
+	protected $db;
 
 	public function __construct($table_name, $id_name = "Id", $connection = "default")
 	{
-		$this->TableName = $table_name;
-		$this->IdName = $id_name;
-		$this->Db = SystemPDO::GetInstance($connection);
+		$dbname = DatabaseFactory::getProperty($connection, 'name');
+		$this->tableName = "{$dbname}.{$table_name}";
+		$this->idName = $id_name;
+		$this->db = DatabaseFactory::getInstance($connection);
 	}
 
-	public function GetAll($start = null, $count = null)
+	public function getAll($start = null, $count = null)
 	{
-		$sql = "select * from $this->TableName";
+		$sql = "select * from $this";
 		if(is_integer($start) && is_integer($count))
 			$sql .= " limit $start, $count";
+		else if(is_integer($start))
+			$sql .= " limit $start";
 		
-		return $this->DoQuery($sql);
+		return $this->doQuery($sql);
 	}
 
-	public function GetById($id)
+	public function getById($id)
 	{
-		$rows = $this->GetBy($this->IdName, $id);
-		if(count($rows) > 0)
+		$rows = $this->getBy($this->idName, $id);
+		if($rows != null)
 			return $rows[0];
-		return null;
 	}
 
-	public function GetBy($col_name, $value)
+	public function getBy($col_name, $value)
 	{
-		$sql = "select * from $this->TableName where $col_name = ?";
-		return $this->DoQuery($sql, array($value));
+		$sql = "select * from $this where $col_name = ?";
+		return $this->doQuery($sql, array($value));
 	}
 
-	public function GetAllLike($criterias, $empty_gets_all = true)
+	public function getAllLike(array $criterias, $empty_gets_all = true)
 	{
 		if(!is_array($criterias) || count($criterias) == 0)
-			return $empty_gets_all ? $this->GetAll() : null;
+			return $empty_gets_all ? $this->getAll() : null;
 
-		$sql = "select * from $this->TableName where ";
+		$sql = "select * from $this where ";
 		$params = array();
 		foreach($criterias as $column => $criteria)
 		{
@@ -60,74 +54,76 @@ abstract class Model
 		}
 
 		$sql = substr($sql, 0, strlen($sql) - 3);
-		return $this->DoQuery($sql, $params);
+		return $this->doQuery($sql, $params);
 	}
 
-	public function Insert(array $values)
+	public function insert(array $values)
 	{
-		if(!is_array($values))
-			return false;
-
-		$sql = "insert into $this->TableName values (";
+		$sql = "insert into $this values (";
 		for($i = 0; $i < count($values); $sql .= "?, ", $i++);
 		$sql = substr($sql, 0, strlen($sql) - 2) . ")";
-		return $this->DoNonQuery($sql, $values) > 0;
+		return $this->doNonQuery($sql, $values) > 0;
 	}
 
-	public function DeleteBy($col_name, $value)
+	public function deleteBy($col_name, $value)
 	{
-		$sql = "delete from $this->TableName where $col_name = ?";
-		return $this->DoNonQuery($sql, array($value));
+		$sql = "delete from $this where $col_name = ?";
+		return $this->doNonQuery($sql, array($value));
 	}
 
-	public function DeleteById($value)
+	public function deleteById($value)
 	{
-		return $this->DeleteBy($this->IdName, $value) > 0;
+		return $this->deleteBy($this->idName, $value) > 0;
 	}
 
-	public function DeleteAll()
+	public function deleteAll()
 	{
-		$sql = "delete from $this->TableName";
-		return $this->DoNonQuery($sql);
+		$sql = "delete from $this";
+		return $this->doNonQuery($sql);
 	}
 
-	public function UpdateById($id, $what, $new)
+	public function updateById($id, $what, $new)
 	{
-		return $this->UpdateBy($this->IdName, $id, $what, $new) > 0;
+		return $this->updateBy($this->idName, $id, $what, $new) > 0;
 	}
 
-	public function UpdateBy($col_criteria, $criteria, $what, $new)
+	public function updateBy($col_criteria, $criteria, $what, $new)
 	{
-		$sql = "update $this->TableName set $what = ? where $col_criteria = ?";
-		return $this->DoNonQuery($sql, array($new, $criteria));
+		$sql = "update $this set $what = ? where $col_criteria = ?";
+		return $this->doNonQuery($sql, array($new, $criteria));
 	}
 
-	protected function DoQuery($sql, array $params = null)
+	protected function doQuery($sql, array $params = null)
 	{
-		$statement = $this->Db->prepare($sql);
-		$this->SetParameters($statement, $params);
+		$statement = $this->db->prepare($sql);
+		$this->setParameters($statement, $params);
 		$statement->execute();
-		return $statement->fetchAll(\PDO::FETCH_ASSOC);
+		$set = $statement->fetchAll(\PDO::FETCH_ASSOC);
+		if(count($set) > 0)
+			return $set;
+		return null;
 	}
 
-	protected function DoScalar($sql, array $params = null)
+	protected function doScalar($sql, array $params = null)
 	{
-		$statement = $this->Db->prepare($sql);
-		$this->SetParameters($statement, $params);
+		$statement = $this->db->prepare($sql);
+		$this->setParameters($statement, $params);
 		$statement->execute();
 		$record = $statement->fetchAll(\PDO::FETCH_NUM);
-		return $record[0][0];
+		if(count($record) > 0)
+			return $record[0][0];
+		return null;
 	}
 
-	protected function DoNonQuery($sql, array $params = null)
+	protected function doNonQuery($sql, array $params = null)
 	{
-		$statement = $this->Db->prepare($sql);
-		$this->SetParameters($statement, $params);
+		$statement = $this->db->prepare($sql);
+		$this->setParameters($statement, $params);
 		$statement->execute();
 		return $statement->rowCount();
 	}
 
-	protected function SetParameters(\PDOStatement $statement, array $params =  null)
+	protected function setParameters(\PDOStatement $statement, array $params =  null)
 	{
 		if(!is_array($params))
 			return;
@@ -136,39 +132,57 @@ abstract class Model
 			$statement->bindParam($i + 1, $params[$i]);
 	}
 
-	public function __get($property)
+	public function lastInsertId()
 	{
-		$return = null;
-		switch($property)
-		{
-			case "LastInsertId":
-				$return = $this->Db->lastInsertId();
-				break;
-
-			case "Count":
-				$return = $this->_count();
-				break;
-
-			case "ErrorInfo":
-				$return = $this->Db->errorInfo();
-				break;
-
-			case "Version":
-				$return = $this->_version();
-				break;
-
-		}
-
-		return $return;
+		return $this->db->lastInsertId();
 	}
 
-	private function _version()
+	public function error()
 	{
-		return $this->DoScalar("select version()");
+		return $this->db->errorInfo();
 	}
 
-	private function _count()
+	public function version()
 	{
-		return $this->DoScalar("select count(*) from $this->TableName");
+		return $this->doScalar('select version()');
+	}
+
+	public function count($what = null)
+	{
+		if($what == null)
+			$what = '*';			
+		return $this->doScalar("select count($what) from $this");
+	}
+
+	public function max($expr)
+	{
+		return $this->doScalar("select max($expr) from $this");
+	}
+
+	public function min($expr)
+	{
+		return $this->doScalar("select min($expr) from $this");
+	}
+
+	public function sum($expr)
+	{
+		return $this->doScalar("select sum($expr) from $this");
+	}
+
+	public function avg($expr)
+	{
+		return $this->doScalar("select avg($expr) from $this");
+	}
+	
+	public function __toString()
+	{
+		return $this->tableName;
+	}
+
+	public function distinct($what)
+	{
+		if(is_array($what))
+			$what = implode(', ', $what);
+		return $this->doQuery("select distinct $what from $this");
 	}
 }
