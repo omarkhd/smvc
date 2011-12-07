@@ -2,7 +2,7 @@
 
 namespace system\model;
 
-abstract class Model
+class Model
 {
 	protected $tableName;
 	protected $idName;

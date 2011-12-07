@@ -20,10 +20,6 @@ class View
 		if(self::$debug)
 			var_dump($vars);
 
-		if($this->vars != null && $html)
-			foreach($this->vars as $key => $val)
-				$this->vars[$key] = htmlentities($val);
-
 		$this->load($this->name);
 	}
 
