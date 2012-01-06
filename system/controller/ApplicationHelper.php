@@ -23,7 +23,7 @@ class ApplicationHelper
 	private static function loadConfig(\system\base\Registry $r)
 	{
 		require_once self::$ConfDir . '/settings.php';
-		$r->set('base_url', $base_url);
+		$r->set('session_name', $session_name);
 	}
 
 	private static function loadDatabaseConfig(\system\base\Registry $r)

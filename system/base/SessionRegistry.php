@@ -14,6 +14,11 @@ class SessionRegistry extends Registry
 	
 	private function __construct()
 	{
+		$r = RequestRegistry::getInstance();
+		$session = $r->get('session_name');
+		if(!empty($session))
+			session_name($session);
+			
 		session_start();
 	}
 
@@ -41,14 +46,14 @@ class SessionRegistry extends Registry
 	public function get($key)
 	{
 		if(isset($_SESSION[$key]))
-			return unserialize($_SESSION[$key]);
+			return $_SESSION[$key];
 
 		return null;
 	}
 
 	public function set($key, $value)
 	{
-		$_SESSION[$key] = serialize($value);
+		$_SESSION[$key] = $value;
 	}
 }
 

@@ -4,5 +4,6 @@
  *	settings file
  */
 
-//url of the production site
-$base_url = 'http://localhost/index.php';
+//session name in which SessionRegistry works
+//a null value doesn't even call session_name()
+$session_name = 'siceeb';
