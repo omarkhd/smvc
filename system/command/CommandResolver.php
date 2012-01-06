@@ -28,7 +28,6 @@ class CommandResolver
 			$cmd_obj = new $def_class();
 		}
 
-		echo $classname;
 		$cmd_obj->context = $request;
 		return $cmd_obj;
 	}
