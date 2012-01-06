@@ -20,7 +20,7 @@ class CommandResolver
 
 		//verifying the generated class againts the requirements
 		$cmd_obj = null;
-		if(@class_exists($classname) && @is_subclass_of($classname, '\system\command\Command'))
+		if(class_exists($classname) && is_subclass_of($classname, '\system\command\Command'))
 			$cmd_obj = new $classname();
 			
 		else {
@@ -28,6 +28,7 @@ class CommandResolver
 			$cmd_obj = new $def_class();
 		}
 
+		echo $classname;
 		$cmd_obj->context = $request;
 		return $cmd_obj;
 	}
@@ -38,7 +39,7 @@ class CommandResolver
 		$cmd_part = $parts[count($parts) - 1]; //last part of the command is the class name
 
 		//constructing the namespace
-		$ns = '\\application\\commands';
+		$ns = 'application\\commands';
 		for($i = 0; $i < count($parts) - 1; $i++)
 			$ns .= '\\' . $parts[$i];
 		$ns .= '\\';
