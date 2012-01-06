@@ -13,7 +13,7 @@ class View
 		$this->name = $name;
 	}
 
-	public function display(array $vars = null, $html = true)
+	public function display(array $vars = null)
 	{
 		$this->vars = $vars;
 
