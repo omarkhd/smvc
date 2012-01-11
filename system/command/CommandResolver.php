@@ -1,6 +1,7 @@
 <?php
 
 namespace system\command;
+use system\exception\SmvcException;
 
 class CommandResolver
 {
@@ -9,7 +10,7 @@ class CommandResolver
 
 	public function getCommand(\system\controller\Request $request)
 	{
-		$cmd = $request->get("cmd");
+		$cmd = $request->get('cmd');
 		$classname = null;
 
 		//generating the class name based on the expected parameters
@@ -19,23 +20,64 @@ class CommandResolver
 			$classname = self::generateClassName($cmd);
 
 		//verifying the generated class againts the requirements
-		$cmd_obj = null;
+		/*$cmd_instance = null;
 		if(class_exists($classname) && is_subclass_of($classname, '\system\command\Command'))
-			$cmd_obj = new $classname();
+			$cmd_instance = new $classname();*/
+
+		$instance = self::instanceCommand($classname);
 			
-		else {
+		//else {
+		if($instance == null || empty($instance)) {
 			$def_class = self::generateClassName(self::$errorCommand);
-			$cmd_obj = new $def_class();
+			$instance = new $def_class();
 		}
 
-		$cmd_obj->context = $request;
-		return $cmd_obj;
+		//configuring last valid instance
+		$last_valid_instance = $instance;
+		$last_valid_instance->context = $request;
+
+		//checking for delegated commands
+		while(($last_try = self::getDelegate($last_valid_instance)) != null) {
+			$last_valid_instance = $last_try;
+			$last_valid_instance->context = $request;
+		}
+			
+		return $last_valid_instance;
+	}
+
+	private static function instanceCommand($classname)
+	{
+		$reflection = @ new \ReflectionClass($classname);
+		$class = $reflection->getName();
+
+		if(!$reflection->isInstantiable())
+			throw new \Exception("$class is not instantiable");
+
+		$constructor = $reflection->getConstructor();
+		if($constructor != null) {
+			if($constructor->getNumberOfRequiredParameters() > 0)
+				throw new \Exception("$class doesn't have a parameterless constructor");
+
+			if(!$constructor->isPublic())
+				throw new \Exception("$class's constructor is not accesible");
+		}
+
+		return $reflection->newInstance();
+	}
+
+	private static function getDelegate(Command $instance)
+	{
+		$o = $instance->delegate();
+		if($o == null || empty($o) || !($o instanceof Command))
+			return null;
+
+		return $o;
 	}
 
 	private static function generateClassName($cmd)
 	{
-		$parts = explode(':', $cmd); //components of the command, namespaces (:) and classname
-		$cmd_part = $parts[count($parts) - 1]; //last part of the command is the class name
+		$parts = explode(':', $cmd); //components of the command path, namespace (:) and classname
+		$cmd_part = $parts[count($parts) - 1]; //last item of the command path is the command class name
 
 		//constructing the namespace
 		$ns = 'application\\commands';

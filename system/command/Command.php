@@ -5,8 +5,13 @@ namespace system\command;
 abstract class Command
 {
 	public $context = null;
-	public final function __construct() {}
+	//public final function __construct() {}
 	public abstract function execute();
+
+	public function delegate()
+	{
+		return null;
+	}
 
 	public function loadHelper($helper_name)
 	{
