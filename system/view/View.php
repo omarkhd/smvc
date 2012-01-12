@@ -47,6 +47,13 @@ class View
 		$this->vars[$name] = $value;
 	}
 
+	public function get($name)
+	{
+		if(isset($this->vars[$name]))
+			return $this->vars[$name];
+		return null;
+	}
+
 	public static function exists($view)
 	{
 		return file_exists(self::getPath($view));

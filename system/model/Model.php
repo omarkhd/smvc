@@ -93,6 +93,18 @@ class Model
 		return $this->doNonQuery($sql, array($new, $criteria));
 	}
 
+	public function exists($id)
+	{
+		return $this->existsBy($this->idName, $id);
+	}
+
+	public function existsBy($field, $value)
+	{
+		$sql =	"select count(*) from $this
+				where $field = ?";
+		return $this->doScalar($sql, array($value)) > 0;
+	}
+
 	protected function doQuery($sql, array $params = null)
 	{
 		$statement = $this->db->prepare($sql);
