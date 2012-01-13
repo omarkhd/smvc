@@ -13,8 +13,14 @@ abstract class Command
 		return null;
 	}
 
-	public function loadHelper($helper_name)
+	public function loadHelper($helper)
 	{
-		\system\controller\ApplicationHelper::loadHelper($helper_name);
+		$params = array();
+		if(is_array($helper))
+			$params = $helper;
+		else
+			$params = func_get_args();
+
+		\system\controller\ApplicationHelper::loadHelper($params);
 	}
 }

@@ -1,7 +1,6 @@
 <?php
 
 namespace system\command;
-use system\exception\SmvcException;
 
 class CommandResolver
 {
@@ -47,8 +46,12 @@ class CommandResolver
 
 	private static function instanceCommand($classname)
 	{
-		$reflection = @ new \ReflectionClass($classname);
+		$reflection = new \ReflectionClass($classname);
+		$base_class = new \ReflectionClass('system\command\Command');
 		$class = $reflection->getName();
+
+		if(!$reflection->isSubclassOf($base_class->getName()))
+			throw new \Exception("$class is not a subclass of " . $base_class->getName());
 
 		if(!$reflection->isInstantiable())
 			throw new \Exception("$class is not instantiable");

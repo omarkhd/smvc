@@ -2,18 +2,30 @@
 
 class Url
 {
-	private static $_base = null;
-
-	public static function base($more = null)
+	public static function google($q = null, $search = false)
 	{
-		if(self::$_base == null)
-		{
-			$r = \system\base\RequestRegistry::getInstance();
-			self::$_base = $r->Get("base_url");
+		$url = 'http://www.google.com';
+		if($q !== null) {
+			if($search)
+				$url .= '/search';
+			$url .= '?q=' . self::encode($q);
 		}
 
-		if($more == null)
-			return self::$_base;
-		return self::$_base . '/' . $more;
+		return $url;
+	}
+
+	public static function lmgtfy($q)
+	{
+		return 'http://lmgtfy.com?q=' . self::encode($q);
+	}
+
+	public static function encode($string)
+	{
+		return urlencode($string);
+	}
+
+	public static function decode($string)
+	{
+		return urldecode($string);
 	}
 }

@@ -27,7 +27,7 @@ class SessionRegistry extends Registry
 		$_SESSION = array();
 	}
 
-	public static function destroySession()
+	public static function destroy()
 	{
 		$_SESSION = array();
 		session_unset();

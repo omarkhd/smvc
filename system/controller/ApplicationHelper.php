@@ -42,16 +42,24 @@ class ApplicationHelper
 		 *	user's defined helpers
 		 */
 
-		$st_path = 'application/helpers/' . $helper . '.php';
-		$nd_path = 'application/helpers/' . $helper . '.inc';
-		$rd_path = 'system/helpers/' . $helper . '.php';
-		if(file_exists($st_path))
-			include_once $st_path;
-		else if(file_exists($nd_path))
-			include_once $nd_path;
-		else if(file_exists($rd_path))
-			include_once $rd_path;
+		$helpers = array();
+		if(is_array($helper))
+			$helpers = $helper;
 		else
-			throw new \Exception("The helper [$helper] was not found");
+			$helpers = func_get_args();
+
+		foreach($helpers as $h) {
+			$st_path = 'application/helpers/' . $h . '.php';
+			$nd_path = 'application/helpers/' . $h . '.inc';
+			$rd_path = 'system/helpers/' . $h . '.php';
+			if(file_exists($st_path))
+				include_once $st_path;
+			else if(file_exists($nd_path))
+				include_once $nd_path;
+			else if(file_exists($rd_path))
+				include_once $rd_path;
+			else
+				throw new \Exception("The helper [$helper] was not found");
+		}
 	}
 }
