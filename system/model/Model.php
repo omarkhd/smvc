@@ -8,7 +8,7 @@ class Model
 	protected $idName;
 	protected $db;
 
-	public function __construct($table_name, $id_name = "Id", $connection = "default")
+	public function __construct($table_name, $id_name = "id", $connection = "default")
 	{
 		$dbname = DatabaseFactory::getProperty($connection, 'name');
 		$this->tableName = "{$dbname}.{$table_name}";
