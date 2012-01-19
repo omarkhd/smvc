@@ -159,6 +159,26 @@ class Model
 		return $this->doScalar('select version()');
 	}
 
+	public function begin()
+	{
+		return $this->db->beginTransaction();
+	}
+
+	public function commit()
+	{
+		return $this->db->commit();
+	}
+
+	public function now()
+	{
+		return $this->doScalar('select now()');
+	}
+
+	public function today()
+	{
+		return $this->doScalar('select current_date');
+	}
+
 	public function count($what = null)
 	{
 		if($what == null)
