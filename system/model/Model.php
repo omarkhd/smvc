@@ -59,10 +59,45 @@ class Model
 
 	public function insert(array $values)
 	{
-		$sql = "insert into $this values (";
+		/*$sql = "insert into $this values (";
 		for($i = 0; $i < count($values); $sql .= "?, ", $i++);
 		$sql = substr($sql, 0, strlen($sql) - 2) . ")";
-		return $this->doNonQuery($sql, $values) > 0;
+		return $this->doNonQuery($sql, $values) > 0;*/
+		
+		/*
+			this function automatically detects if the array
+			is associative or numeric, if it is associative,
+			it creates column names for the insert, if not, just
+			puts them in order without column names
+		*/
+			
+		$k = array();
+		$v = array();
+		$questions = array();
+		
+		foreach($values as $key => $value) {
+			$k[] = $key;
+			$v[] = $value;
+			$questions[] = '?';
+		}
+		
+		$by_columns = true;
+		foreach($k as $column) {
+			if(is_numeric($column)) {
+				$by_columns = false;
+				break;
+			}
+		}
+		
+		$sql = "insert into $this ";
+		$sql .= $by_columns ? '(' . implode(', ', $k) . ') ' : '';
+		$sql .= 'values (' . implode(', ', $questions) . ')';
+		//echo $sql;
+		
+		/*$sql = "insert into $this values (";
+		for($i = 0; $i < count($values); $sql .= "?, ", $i++);
+		$sql = substr($sql, 0, strlen($sql) - 2) . ")";*/
+		return $this->doNonQuery($sql, $v) > 0;
 	}
 
 	public function deleteBy($col_name, $value)
