@@ -6,14 +6,14 @@ class Model
 {
 	protected $tableName;
 	protected $idName;
-	protected $db;
+	private $strategy;
 
 	public function __construct($table_name, $id_name = "id", $connection = "default")
 	{
 		$dbname = DatabaseFactory::getProperty($connection, 'name');
 		$this->tableName = "{$dbname}.{$table_name}";
 		$this->idName = $id_name;
-		$this->db = DatabaseFactory::getInstance($connection);
+		$this->strategy = DatabaseFactory::getStrategy($connection);
 	}
 
 	public function getAll($start = null, $count = null)
@@ -59,13 +59,8 @@ class Model
 
 	public function insert(array $values)
 	{
-		/*$sql = "insert into $this values (";
-		for($i = 0; $i < count($values); $sql .= "?, ", $i++);
-		$sql = substr($sql, 0, strlen($sql) - 2) . ")";
-		return $this->doNonQuery($sql, $values) > 0;*/
-		
 		/*
-			this function automatically detects if the array
+			this method automatically detects if the array
 			is associative or numeric, if it is associative,
 			it creates column names for the insert, if not, just
 			puts them in order without column names
@@ -92,11 +87,6 @@ class Model
 		$sql = "insert into $this ";
 		$sql .= $by_columns ? '(' . implode(', ', $k) . ') ' : '';
 		$sql .= 'values (' . implode(', ', $questions) . ')';
-		//echo $sql;
-		
-		/*$sql = "insert into $this values (";
-		for($i = 0; $i < count($values); $sql .= "?, ", $i++);
-		$sql = substr($sql, 0, strlen($sql) - 2) . ")";*/
 		return $this->doNonQuery($sql, $v) > 0;
 	}
 
@@ -142,66 +132,50 @@ class Model
 
 	protected function doQuery($sql, array $params = null)
 	{
-		$statement = $this->db->prepare($sql);
-		$this->setParameters($statement, $params);
-		$statement->execute();
-		$set = $statement->fetchAll(\PDO::FETCH_ASSOC);
-		if(count($set) > 0)
-			return $set;
-		return null;
+		return $this->strategy->doQuery($sql, $params);
 	}
 
 	protected function doScalar($sql, array $params = null)
 	{
-		$statement = $this->db->prepare($sql);
-		$this->setParameters($statement, $params);
-		$statement->execute();
-		$record = $statement->fetchAll(\PDO::FETCH_NUM);
-		if(count($record) > 0)
-			return $record[0][0];
-		return null;
+		return $this->strategy->doScalar($sql, $params);
 	}
 
 	protected function doNonQuery($sql, array $params = null)
 	{
-		$statement = $this->db->prepare($sql);
-		$this->setParameters($statement, $params);
-		$statement->execute();
-		return $statement->rowCount();
-	}
-
-	protected function setParameters(\PDOStatement $statement, array $params =  null)
-	{
-		if(!is_array($params))
-			return;
-
-		for($i = 0; $i < count($params); $i++)
-			$statement->bindParam($i + 1, $params[$i]);
+		return $this->strategy->doNonQuery($sql, $params);
 	}
 
 	public function lastInsertId()
 	{
-		return $this->db->lastInsertId();
+		return $this->strategy->lastInsertId();
 	}
 
 	public function error()
 	{
-		return $this->db->errorInfo();
+		$error = $this->doQuery('show errors');
+		if(isset($error[0]))
+			return $error[0];
+		return null;
 	}
 
-	public function version()
+	public function driver()
 	{
-		return $this->doScalar('select version()');
+		return $this->strategy->driver();
 	}
 
 	public function begin()
 	{
-		return $this->db->beginTransaction();
+		return $this->strategy->begin();
 	}
 
 	public function commit()
 	{
-		return $this->db->commit();
+		return $this->strategy->commit();
+	}
+
+	public function rollback()
+	{
+		return $this->strategy->rollback();
 	}
 
 	public function now()

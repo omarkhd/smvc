@@ -1,50 +1,57 @@
 <?php
 
 namespace system\model;
+use Exception;
+use system\base\RequestRegistry;
 
 class DatabaseFactory
 {
-	//private static $Instance = null;
 	private function __construct() {}
-	private static $connections = array();
+	private static $strategies = array();
 
-	private static function instancePDO($connection)
+	private static function instanceStrategy($connection)
 	{
 		$db_info = self::getProperties($connection);
-		$pdo = null;
+		if($db_info == null)
+			throw new Exception('There is no connection configuration of "' . $connection . '"');
+		if(!isset($db_info['driver']))
+			throw new Exception('No driver is specified for connection "' . $connection . '"');
 
-		try {
-			$driver = $db_info["driver"];
-			$host = $db_info["host"];
-			$user = $db_info["user"];
-			$pass = $db_info["password"];
-			$name = $db_info["name"];
-			$set_names = $db_info["set_names"];
+		$strategy = null;
+		$driver = $db_info['driver'];
+		switch($driver) {
+			case 'mysql':
+				$strategy = new PDOCoreQueryStrategy($db_info);
+				break;
+			case 'mysqli':
+				$strategy = new MySQLiCoreQueryStrategy($db_info);
+				break;
+			default:
+				throw new Exception("Driver '$driver' not found for connection '$connection'");
+		}
 
-			$dsn = "$driver:dbname=$name;host=$host";
-			$pdo = new \PDO($dsn, $user, $pass);
-			$pdo->exec("set names '$set_names'");
-		} catch(\Exception $e) {}
-			
-		return $pdo;
+		return $strategy;
 	}
 
-	public static function getInstance($conn)
+	public static function getStrategy($conn)
 	{
-		if(!isset(self::$connections[$conn]) || self::$connections[$conn] == null)
-			self::$connections[$conn] = self::instancePDO($conn);
+		if(!isset(self::$strategies[$conn]) || self::$strategies[$conn] == null)
+			self::$strategies[$conn] = self::instanceStrategy($conn);
 
-		return self::$connections[$conn];
+		return self::$strategies[$conn];
 	}
 
 	public static function closeConnections()
 	{
-		self::$connections = null;
+		foreach(self::$strategies as $strategy)
+			$strategy->close();
+
+		self::$strategies = null;
 	}
 
 	public static function getProperties($connection)
 	{
-		$registry = \system\base\RequestRegistry::getInstance();
+		$registry = RequestRegistry::getInstance();
 		$databases = $registry->get("databases");
 
 		if(!isset($databases[$connection]))
