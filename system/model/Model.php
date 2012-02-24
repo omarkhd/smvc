@@ -27,7 +27,7 @@ class Model
 		return $this->doQuery($sql);
 	}
 
-	public function getById($id)
+	public function get($id)
 	{
 		$rows = $this->getBy($this->idName, $id);
 		if($rows != null)
@@ -38,6 +38,14 @@ class Model
 	{
 		$sql = "select * from $this where $col_name = ?";
 		return $this->doQuery($sql, array($value));
+	}
+	
+	public function getUnique($field, $value)
+	{
+		$tuples = $this->getBy($field, $value);
+		if(isset($tuples[0]))
+			return $tuples[0];
+		return null;
 	}
 
 	public function getAllLike(array $criterias, $empty_gets_all = true)
@@ -96,7 +104,7 @@ class Model
 		return $this->doNonQuery($sql, array($value));
 	}
 
-	public function deleteById($value)
+	public function delete($value)
 	{
 		return $this->deleteBy($this->idName, $value) > 0;
 	}
@@ -107,7 +115,7 @@ class Model
 		return $this->doNonQuery($sql);
 	}
 
-	public function updateById($id, $what, $new)
+	public function update($id, $what, $new)
 	{
 		return $this->updateBy($this->idName, $id, $what, $new) > 0;
 	}
