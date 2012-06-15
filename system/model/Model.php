@@ -1,6 +1,7 @@
 <?php
 
 namespace system\model;
+use Exception;
 
 class Model
 {
@@ -34,10 +35,15 @@ class Model
 			return $rows[0];
 	}
 
-	public function getBy($col_name, $value)
+	public function getBy($col_name, $value = true)
 	{
-		$sql = "select * from $this where $col_name = ?";
-		return $this->doQuery($sql, array($value));
+		$params = $this->normalizeParams($col_name, $value);
+		$op = (bool) $value ? 'and' : 'or';
+
+		$condition = implode(" = ? $op ", array_keys($params)) . ' = ?';
+		$sql = "select * from $this where $condition";
+		echo $sql;
+		return $this->doQuery($sql, array_values($params));
 	}
 	
 	public function getUnique($field, $value)
@@ -65,7 +71,7 @@ class Model
 		return $this->doQuery($sql, $params);
 	}
 
-	public function insert(array $values)
+	public function insert(array $params)
 	{
 		/*
 			this method automatically detects if the array
@@ -74,34 +80,32 @@ class Model
 			puts them in order without column names
 		*/
 			
-		$k = array();
-		$v = array();
-		$questions = array();
-		
-		foreach($values as $key => $value) {
-			$k[] = $key;
-			$v[] = $value;
-			$questions[] = '?';
-		}
-		
-		$by_columns = true;
-		foreach($k as $column) {
-			if(is_numeric($column)) {
-				$by_columns = false;
-				break;
-			}
+		$by_columns = false;
+		$keys = null;
+		$values = array_values($params);
+		$length = count($params);
+
+		if($this->isAssociative($params)) {
+			$by_columns = true;
+			$keys = array_keys($params);
 		}
 		
 		$sql = "insert into $this ";
-		$sql .= $by_columns ? '(' . implode(', ', $k) . ') ' : '';
-		$sql .= 'values (' . implode(', ', $questions) . ')';
-		return $this->doNonQuery($sql, $v) > 0;
+		$sql .= $by_columns ? '(' . implode(', ', $keys) . ') ' : '';
+		$sql .= 'values (' . implode(', ', array_fill(0, $length, '?')) . ')';
+		return $this->doNonQuery($sql, $values) > 0;
 	}
 
-	public function deleteBy($col_name, $value)
+	public function deleteBy($col_name, $value = true)
 	{
-		$sql = "delete from $this where $col_name = ?";
-		return $this->doNonQuery($sql, array($value));
+		$params = $this->normalizeParams($col_name, $value);
+		$op = (bool) $value ? 'and' : 'or';
+
+		$condition = implode(" = ? $op ", array_keys($params)) . ' = ?';
+		$sql = "delete from $this where $condition";
+		echo $sql;
+
+		return $this->doNonQuery($sql, array_values($params));
 	}
 
 	public function delete($value)
@@ -115,15 +119,37 @@ class Model
 		return $this->doNonQuery($sql);
 	}
 
-	public function update($id, $what, $new)
+	public function update($id, $what, $new = null)
 	{
+		if(is_array($what) && $this->isAssociative($what))
+			return $this->updateBy(array($this->idName => $id), $what) > 0;
 		return $this->updateBy($this->idName, $id, $what, $new) > 0;
 	}
 
-	public function updateBy($col_criteria, $criteria, $what, $new)
+	#params 1) criteria_array 2) update_array 3) every condition or not
+	public function updateBy($col_criteria, $criteria, $what = true, $new = null)
 	{
-		$sql = "update $this set $what = ? where $col_criteria = ?";
-		return $this->doNonQuery($sql, array($new, $criteria));
+		#for backwards compatibility
+		if(!(is_array($col_criteria) || is_array($criteria))) {
+			if(func_num_args() != 4)
+				throw new Exception('Deprecated update need 4 parameters');
+			$sql = "update $this set $what = ? where $col_criteria = ?";
+			echo $sql;
+			return $this->doNonQuery($sql, array($new, $criteria));
+		}
+		
+		$condition_params = $this->normalizeParams($col_criteria, null);
+		$set_params = $this->normalizeParams($criteria, null);
+		$op = (bool) $what;
+
+		$updates = implode(' = ?, ', array_keys($set_params)) . ' = ?';
+		$conditions = implode(" = ? $op ", array_keys($condition_params)) . ' = ?';
+		$sql_params = array();
+		foreach(array_values($set_params) as $item) $sql_params[] = $item;
+		foreach(array_values($condition_params) as $item) $sql_params[] = $item;
+
+		$sql = "update $this set $updates where $conditions";
+		return $this->doNonQuery($sql, $sql_params);
 	}
 
 	public function exists($id)
@@ -233,5 +259,27 @@ class Model
 		if(is_array($what))
 			$what = implode(', ', $what);
 		return $this->doQuery("select distinct $what from $this");
+	}
+
+	private function isAssociative(array $to_test)
+	{
+		if(count($to_test) == 0)
+			return false;
+		foreach(array_keys($to_test) as $key)
+			if(!is_integer($key))
+				return true;
+		return false;
+	}
+
+	private function normalizeParams($first, $second)
+	{
+		$params = array();
+		if(!(is_array($first) || is_array($second)))
+			$params[$first] = $second;
+		else if(is_array($first) && $this->isAssociative($first))
+			$params = $first;
+		else
+			throw new Exception('Cannot generate a correct query with this parameters');
+		return $params;
 	}
 }
