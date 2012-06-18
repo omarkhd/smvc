@@ -42,7 +42,6 @@ class Model
 
 		$condition = implode(" = ? $op ", array_keys($params)) . ' = ?';
 		$sql = "select * from $this where $condition";
-		echo $sql;
 		return $this->doQuery($sql, array_values($params));
 	}
 	
@@ -103,7 +102,6 @@ class Model
 
 		$condition = implode(" = ? $op ", array_keys($params)) . ' = ?';
 		$sql = "delete from $this where $condition";
-		echo $sql;
 
 		return $this->doNonQuery($sql, array_values($params));
 	}
@@ -134,13 +132,12 @@ class Model
 			if(func_num_args() != 4)
 				throw new Exception('Deprecated update need 4 parameters');
 			$sql = "update $this set $what = ? where $col_criteria = ?";
-			echo $sql;
 			return $this->doNonQuery($sql, array($new, $criteria));
 		}
 		
 		$condition_params = $this->normalizeParams($col_criteria, null);
 		$set_params = $this->normalizeParams($criteria, null);
-		$op = (bool) $what;
+		$op = (bool) $what ? 'and' : 'or';
 
 		$updates = implode(' = ?, ', array_keys($set_params)) . ' = ?';
 		$conditions = implode(" = ? $op ", array_keys($condition_params)) . ' = ?';
