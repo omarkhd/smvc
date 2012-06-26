@@ -279,4 +279,19 @@ class Model
 			throw new Exception('Cannot generate a correct query with this parameters');
 		return $params;
 	}
+
+	public function setStrategy(IDriverCoreQueryStrategy $strategy)
+	{
+		$this->strategy = $strategy;
+	}
+
+	public function getStrategy()
+	{
+		return $this->strategy;
+	}
+
+	public function changeSource(Model $model)
+	{
+		$this->setStrategy($model->getStrategy());
+	}
 }
