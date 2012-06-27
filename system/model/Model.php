@@ -280,7 +280,7 @@ class Model
 		return $params;
 	}
 
-	public function setStrategy(IDriverCoreQueryStrategy $strategy)
+	protected function setStrategy(IDriverCoreQueryStrategy $strategy)
 	{
 		$this->strategy = $strategy;
 	}
@@ -290,7 +290,7 @@ class Model
 		return $this->strategy;
 	}
 
-	public function changeSource(Model $model)
+	public function useConnectionOf(Model $model)
 	{
 		$this->setStrategy($model->getStrategy());
 	}
