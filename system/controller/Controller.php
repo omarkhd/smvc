@@ -1,6 +1,10 @@
 <?php
 
 namespace system\controller;
+use \system\controller\Request;
+use \system\controller\ApplicationHelper;
+use \system\command\CommandResolver;
+use \system\model\DatabaseFactory;
 
 class Controller
 {
@@ -16,15 +20,15 @@ class Controller
 	private function init()
 	{
 		//initializing the registry, by default the request registry
-		\system\controller\ApplicationHelper::initRegistry();
+		ApplicationHelper::initRegistry();
 	}
 
 	private function handleRequest()
 	{
-		$request = new \system\controller\Request();
-		$resolver = new \system\command\CommandResolver();
-		$cmd = $resolver->getCommand($request);
-		$cmd->execute();
-		\system\model\DatabaseFactory::closeConnections();
+		$request = new Request();
+		$resolver = new CommandResolver();
+		$command = $resolver->getCommand($request);
+		$command->run();
+		DatabaseFactory::closeConnections();
 	}
 }

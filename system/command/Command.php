@@ -1,12 +1,34 @@
 <?php
 
 namespace system\command;
+use \Exception;
 
 abstract class Command
 {
 	public $context = null;
-	//public final function __construct() {}
-	public abstract function execute();
+	#public final function __construct() {}
+	
+	protected function before() {}
+	protected abstract function execute();
+	protected function after() {}
+
+	public function onException(Exception $exception)
+	{
+		throw $exception;
+	}
+
+	public function run()
+	{
+		try {
+			$this->before();
+			$this->execute();
+			$this->after();
+		}
+		catch(Exception $exception)
+		{
+			$this->onException($exception);
+		}
+	}
 
 	public function delegate()
 	{
