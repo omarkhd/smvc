@@ -1,6 +1,7 @@
 <?php
 
 namespace system\controller;
+use Exception;
 
 class ApplicationHelper
 {
@@ -59,7 +60,7 @@ class ApplicationHelper
 			else if(file_exists($rd_path))
 				include_once $rd_path;
 			else
-				throw new \Exception("The helper [$helper] was not found");
+				throw new Exception("The helper [$helper] was not found");
 		}
 	}
 }

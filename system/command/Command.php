@@ -1,13 +1,15 @@
 <?php
 
 namespace system\command;
-use \Exception;
+use system\controller\ApplicationHelper;
+use Exception;
 
 abstract class Command
 {
 	public $context = null;
 	#public final function __construct() {}
 	
+	protected function init() {}
 	protected function before() {}
 	protected abstract function execute();
 	protected function after() {}
@@ -20,6 +22,7 @@ abstract class Command
 	public function run()
 	{
 		try {
+			$this->init();
 			$this->before();
 			$this->execute();
 			$this->after();
@@ -37,12 +40,6 @@ abstract class Command
 
 	public function loadHelper($helper)
 	{
-		$params = array();
-		if(is_array($helper))
-			$params = $helper;
-		else
-			$params = func_get_args();
-
-		\system\controller\ApplicationHelper::loadHelper($params);
+		ApplicationHelper::loadHelper($helper);
 	}
 }

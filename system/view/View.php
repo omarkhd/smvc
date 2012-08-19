@@ -1,19 +1,28 @@
 <?php
 
 namespace system\view;
+use Exception;
 
 class View
 {
 	private $name;
 	private $vars;
-	public static $debug = false;
 	private static $dir = 'application/views';
 
-	public function __construct($name = "default")
-	
+	public function __construct($name = 'default')
 	{
 		$this->name = $name;
+		$this->clear();
+	}
+
+	public function clear()
+	{
 		$this->vars = array();
+	}
+
+	public function dump()
+	{
+		return var_export($this->vars, true);
 	}
 
 	public function display(array $vars = null)
@@ -21,25 +30,18 @@ class View
 		if($vars != null)
 			foreach($vars as $key => $val)
 				$this->set($key, $val);
-		//$this->vars = $vars;
-
-		if(self::$debug)
-			var_dump($vars);
-
 		$this->load($this->name);
 	}
 
 	private function load($view_name)
 	{
 		if(!self::exists($view_name))
-			throw new \Exception('Could not find view template "' . $view_name . '"');
-
+			throw new Exception(sprintf('Could not find view template "%s"', $view_name ));
 		$vars = $this->vars;
 		if($vars != null)
 			foreach($vars as $var => $val)
 				$$var = $val;
-		
-		include self::getPath($view_name);
+		require self::getPath($view_name);
 	}
 
 	public function set($name, $value)
@@ -59,24 +61,8 @@ class View
 		return file_exists(self::getPath($view));
 	}
 
-	public static function getPath($view, $ext = '.php')
+	public static function getPath($view, $ext = 'php')
 	{
-		return self::$dir . '/' . $view . $ext;
-	}
-
-	private function v($var)
-	{
-		if($var == '*')
-			return $this->vars;
-
-		if(isset($this->vars[$var]))
-			return $this->vars[$var];
-
-		return null;
-	}
-
-	private function e($var)
-	{
-		echo $this->v($var);
+		return sprintf('%s/%s.%s', self::$dir, $view, $ext);
 	}
 }
