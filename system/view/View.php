@@ -5,14 +5,19 @@ use Exception;
 
 class View
 {
+	const dir = 'application/views';
 	private $name;
 	private $vars;
-	private static $dir = 'application/views';
+
+	private $loadstack;
+
+	protected $block;
 
 	public function __construct($name = 'default')
 	{
-		$this->name = $name;
 		$this->clear();
+		$this->name = $name;
+		$this->block = new InheritanceManager($this);
 	}
 
 	public function clear()
@@ -30,18 +35,23 @@ class View
 		if($vars != null)
 			foreach($vars as $key => $val)
 				$this->set($key, $val);
+		$this->loadstack = new \SplStack();
 		$this->load($this->name);
 	}
 
-	private function load($view_name)
+	private final function load($view_name)
 	{
+		$this->loadstack->push($view_name);
+
 		if(!self::exists($view_name))
 			throw new Exception(sprintf('Could not find view template "%s"', $view_name ));
-		$vars = $this->vars;
-		if($vars != null)
-			foreach($vars as $var => $val)
+		if($this->vars != null) {
+			foreach($this->vars as $var => $val)
 				$$var = $val;
-		require self::getPath($view_name);
+		}
+		require self::path($view_name);
+
+		$this->loadstack->pop();
 	}
 
 	public function set($name, $value)
@@ -56,13 +66,25 @@ class View
 		return null;
 	}
 
-	public static function exists($view)
+	public static final function exists($view)
 	{
-		return file_exists(self::getPath($view));
+		return file_exists(self::path($view));
 	}
 
-	public static function getPath($view, $ext = 'php')
+	public static final function path($view, $ext = 'php')
 	{
-		return sprintf('%s/%s.%s', self::$dir, $view, $ext);
+		return sprintf('%s/%s.%s', self::dir, $view, $ext);
+	}
+
+	/* block engine */
+
+	public final function current()
+	{
+		return $this->loadstack->top();
+	}
+
+	protected final function inherit($view)
+	{
+		$this->block->register($view);
 	}
 }
