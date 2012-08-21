@@ -10,6 +10,7 @@ class View
 	private $vars;
 
 	private $loadstack;
+	private $loadqueue;
 
 	protected $block;
 
@@ -27,7 +28,9 @@ class View
 
 	public function dump()
 	{
-		return var_export($this->vars, true);
+		$dump['vars'] = var_export($this->vars, true);
+		$dump['blocks'] = $this->block->dump();
+		return var_export($dump, true);
 	}
 
 	public function display(array $vars = null)
@@ -36,7 +39,10 @@ class View
 			foreach($vars as $key => $val)
 				$this->set($key, $val);
 		$this->loadstack = new \SplStack();
+		$this->loadqueue = new \SplQueue();
 		$this->load($this->name);
+		while(!$this->loadqueue->isEmpty())
+			$this->load($this->loadqueue->pop());
 	}
 
 	private final function load($view_name)
@@ -76,8 +82,6 @@ class View
 		return sprintf('%s/%s.%s', self::dir, $view, $ext);
 	}
 
-	/* block engine */
-
 	public final function current()
 	{
 		return $this->loadstack->top();
@@ -86,5 +90,6 @@ class View
 	protected final function inherit($view)
 	{
 		$this->block->register($view);
+		$this->loadqueue->push($view);
 	}
 }
