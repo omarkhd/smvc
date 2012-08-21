@@ -15,7 +15,7 @@ class InheritanceManager
 	{
 		$this->view = $view;
 		$this->inherits = array();
-		$this->blockstack = new SplStack;
+		$this->blockstack = new SplStack();
 		$this->blocks = array();
 	}
 
@@ -34,7 +34,7 @@ class InheritanceManager
 	{
 		$this->checkEnvironment();
 
-		if($this->blockstack->count() == 0)
+		if($this->blockstack->isEmpty())
 			throw new Exception(sprintf('Trying to close "%s" and there are no opened blocks', $blockname));
 
 		$block = $this->blockstack->pop();
@@ -54,7 +54,7 @@ class InheritanceManager
 	{
 		$master = $this->view->current();
 		foreach($this->blocks as $block) {
-			if($block->master = $master && $block->name == $blockname)
+			if($block->master == $master && $block->name == $blockname)
 				$block->display();
 		}
 	}

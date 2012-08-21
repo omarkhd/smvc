@@ -2,6 +2,8 @@
 
 namespace system\view;
 use Exception;
+use SplStack;
+use SplQueue;
 
 class View
 {
@@ -35,11 +37,13 @@ class View
 
 	public function display(array $vars = null)
 	{
-		if($vars != null)
+		if($vars != null) {
 			foreach($vars as $key => $val)
 				$this->set($key, $val);
-		$this->loadstack = new \SplStack();
-		$this->loadqueue = new \SplQueue();
+		}
+
+		$this->loadstack = new SplStack();
+		$this->loadqueue = new SplQueue();
 		$this->load($this->name);
 		while(!$this->loadqueue->isEmpty())
 			$this->load($this->loadqueue->pop());
