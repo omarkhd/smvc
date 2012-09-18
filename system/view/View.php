@@ -64,9 +64,14 @@ class View
 		$this->loadstack->pop();
 	}
 
-	public function set($name, $value)
+	public function set($name, $value = null)
 	{
-		$this->vars[$name] = $value;
+		if(is_array($name) && $value == null) {
+			foreach($name as $var => $val)
+				$this->vars[$var] = $val;
+		}
+		else
+			$this->vars[$name] = $value;
 	}
 
 	public function get($name)
