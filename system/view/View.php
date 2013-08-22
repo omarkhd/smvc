@@ -1,9 +1,7 @@
 <?php
 
-namespace system\view;
-use Exception;
-use SplStack;
-use SplQueue;
+namespace smvc\view;
+use Exception, SplStack, SplQueue;
 
 class View
 {

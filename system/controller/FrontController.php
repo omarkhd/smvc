@@ -1,12 +1,12 @@
 <?php
 
-namespace system\controller;
-use \system\controller\Request;
-use \system\controller\ApplicationHelper;
-use \system\command\CommandResolver;
-use \system\model\DatabaseFactory;
+namespace smvc\controller;
+use \smvc\controller\Request;
+use \smvc\controller\ApplicationHelper;
+use \smvc\command\CommandResolver;
+use \smvc\model\DatabaseFactory;
 
-class Controller
+class FrontController
 {
 	private function __construct() {}
 

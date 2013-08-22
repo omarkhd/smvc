@@ -1,6 +1,5 @@
 <?php
-
-namespace system\base;
+namespace smvc\base;
 
 abstract class Registry
 {
@@ -8,5 +7,3 @@ abstract class Registry
 	public abstract function set($key, $val);
 	public abstract function clear();
 }
-
-?>

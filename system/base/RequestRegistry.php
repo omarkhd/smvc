@@ -1,13 +1,9 @@
 <?php
+namespace smvc\base;
 
 /*
-
-a registry for the request scope
-
-*/
-
-namespace system\base;
-
+ * a registry for the request scope
+ */
 class RequestRegistry extends Registry
 {
 	private static $Instance = null;
@@ -44,5 +40,3 @@ class RequestRegistry extends Registry
 		$this->Container[$key] = $value;
 	}
 }
-
-?>

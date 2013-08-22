@@ -1,10 +1,3 @@
 <?php
-
-function __autoload($classname)
-{
-	$path = explode('\\', $classname);
-	$strpath = implode(DIRECTORY_SEPARATOR, $path);
-	include_once $strpath . '.php';
-}
-
-\system\controller\Controller::run();
+require_once __DIR__ . '/system/bootstrap.php';
+\smvc\controller\FrontController::run();

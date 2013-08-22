@@ -1,8 +1,7 @@
 <?php
 
-namespace system\model;
-use PDO;
-use PDOStatement;
+namespace smvc\model;
+use PDO, PDOStatement;
 
 class PDOCoreQueryStrategy implements IDriverCoreQueryStrategy
 {

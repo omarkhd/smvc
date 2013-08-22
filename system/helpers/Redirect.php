@@ -1,4 +1,5 @@
 <?php
+namespace smvc\helpers;
 
 abstract class Redirect
 {

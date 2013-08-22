@@ -1,8 +1,8 @@
 <?php
 
-namespace system\model;
+namespace smvc\model;
+use smvc\base\RequestRegistry;
 use Exception;
-use system\base\RequestRegistry;
 
 class DatabaseFactory
 {

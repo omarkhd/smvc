@@ -1,13 +1,14 @@
 <?php
-
-namespace system\command;
+namespace smvc\command;
+use smvc\controller\Request;
+use Exception, ReflectionClass;
 
 class CommandResolver
 {
 	private static $defaultCommand = "Default";
 	private static $errorCommand = "Error";
 
-	public function getCommand(\system\controller\Request $request)
+	public function getCommand(Request $request)
 	{
 		$cmd = $request->get('cmd');
 		$classname = null;
@@ -46,23 +47,23 @@ class CommandResolver
 
 	private static function instanceCommand($classname)
 	{
-		$reflection = new \ReflectionClass($classname);
-		$base_class = new \ReflectionClass('system\command\Command');
+		$reflection = new ReflectionClass($classname);
+		$base_class = new ReflectionClass('system\command\Command');
 		$class = $reflection->getName();
 
 		if(!$reflection->isSubclassOf($base_class->getName()))
-			throw new \Exception("$class is not a subclass of " . $base_class->getName());
+			throw new Exception("$class is not a subclass of " . $base_class->getName());
 
 		if(!$reflection->isInstantiable())
-			throw new \Exception("$class is not instantiable");
+			throw new Exception("$class is not instantiable");
 
 		$constructor = $reflection->getConstructor();
 		if($constructor != null) {
 			if($constructor->getNumberOfRequiredParameters() > 0)
-				throw new \Exception("$class doesn't have a parameterless constructor");
+				throw new Exception("$class doesn't have a parameterless constructor");
 
 			if(!$constructor->isPublic())
-				throw new \Exception("$class's constructor is not accesible");
+				throw new Exception("$class's constructor is not accesible");
 		}
 
 		return $reflection->newInstance();

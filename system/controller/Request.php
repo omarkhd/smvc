@@ -1,11 +1,9 @@
 <?php
-
-namespace system\controller;
+namespace smvc\controller;
 
 class Request
 {
 	private $container;
-	private $messages;
 
 	public function __construct()
 	{
@@ -42,15 +40,5 @@ class Request
 	public function set($key, $value)
 	{
 		$this->container[$key] = $value;
-	}
-
-	public function addMessage($msg)
-	{
-		$this->messages[] = $msg;
-	}
-
-	public function getMessages()
-	{
-		return $this->messages;
 	}
 }

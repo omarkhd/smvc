@@ -1,6 +1,6 @@
 <?php
-
-use system\model\Model;
+namespace application\models;
+use smvc\model\Model;
 
 class TestModel extends Model
 {

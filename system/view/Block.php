@@ -1,6 +1,6 @@
 <?php
 
-namespace system\view;
+namespace smvc\view;
 
 class Block
 {

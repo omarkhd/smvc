@@ -1,13 +1,9 @@
 <?php
+namespace smvc\base;
 
 /*
-
-a registry for the session scope
-
-*/
-
-namespace system\base;
-
+ * a registry for the session scope
+ */
 class SessionRegistry extends Registry
 {
 	private static $instance = null;
@@ -15,6 +11,7 @@ class SessionRegistry extends Registry
 	private function __construct()
 	{
 		$r = RequestRegistry::getInstance();
+		/* maybe this should be changed to a settings manager */
 		$session = $r->get('session_name');
 		if(!empty($session))
 			session_name($session);
@@ -56,5 +53,3 @@ class SessionRegistry extends Registry
 		$_SESSION[$key] = $value;
 	}
 }
-
-?>

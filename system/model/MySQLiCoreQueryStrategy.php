@@ -1,8 +1,7 @@
 <?php
 
-namespace system\model;
-use mysqli;
-use mysqli_stmt;
+namespace smvc\model;
+use mysqli, mysqli_stmt;
 
 class MySQLiCoreQueryStrategy implements IDriverCoreQueryStrategy
 {

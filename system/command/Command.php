@@ -1,7 +1,6 @@
 <?php
-
-namespace system\command;
-use system\controller\ApplicationHelper;
+namespace smvc\command;
+use smvc\controller\ApplicationHelper;
 use Exception;
 
 abstract class Command

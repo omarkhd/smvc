@@ -1,6 +1,6 @@
 <?php
 
-namespace system\model;
+namespace smvc\model;
 
 interface IDriverCoreQueryStrategy
 {

@@ -1,8 +1,7 @@
 <?php
 
-namespace system\view;
-use Exception;
-use SplStack;
+namespace smvc\view;
+use Exception, SplStack;
 
 class InheritanceManager
 {

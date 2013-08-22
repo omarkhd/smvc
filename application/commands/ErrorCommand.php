@@ -1,12 +1,11 @@
 <?php
-
 namespace application\commands;
 
-class ErrorCommand extends \system\command\Command
+class ErrorCommand extends \smvc\command\Command
 {
 	public function execute()
 	{
-		$view = new \system\view\View("error");
+		$view = new \smvc\view\View('error');
 		$view->display();
 	}
 }
