@@ -11,25 +11,23 @@ class DatabaseFactory
 
 	private static function instanceStrategy($connection)
 	{
-		$db_info = self::getProperties($connection);
-		if($db_info == null)
+		$database_properties = self::getProperties($connection);
+		if(!$database_properties)
 			throw new Exception('There is no connection configuration of "' . $connection . '"');
-		if(!isset($db_info['driver']))
-			throw new Exception('No driver is specified for connection "' . $connection . '"');
-
+		if(!isset($database_properties['engine']))
+			throw new Exception('No engine is specified for connection "' . $connection . '"');
 		$strategy = null;
-		$driver = $db_info['driver'];
-		switch($driver) {
+		$engine = $database_properties['engine'];
+		switch($engine) {
 			case 'mysql':
-				$strategy = new PDOCoreQueryStrategy($db_info);
+				$strategy = new PDOCoreQueryStrategy($database_properties);
 				break;
 			case 'mysqli':
-				$strategy = new MySQLiCoreQueryStrategy($db_info);
+				$strategy = new MySQLiCoreQueryStrategy($database_properties);
 				break;
 			default:
-				throw new Exception("Driver '$driver' not found for connection '$connection'");
+				throw new Exception("Engine '$engine' not found for connection '$connection'");
 		}
-
 		return $strategy;
 	}
 
@@ -37,7 +35,6 @@ class DatabaseFactory
 	{
 		if(!isset(self::$strategies[$conn]) || self::$strategies[$conn] == null)
 			self::$strategies[$conn] = self::instanceStrategy($conn);
-
 		return self::$strategies[$conn];
 	}
 
@@ -45,18 +42,16 @@ class DatabaseFactory
 	{
 		foreach(self::$strategies as $strategy)
 			$strategy->close();
-
 		self::$strategies = null;
 	}
 
 	public static function getProperties($connection)
 	{
 		$registry = RequestRegistry::getInstance();
-		$databases = $registry->get("databases");
-
-		if(!isset($databases[$connection]))
+		$settings = $registry->get('__settings__');
+		if(!isset($settings['DATABASES'][$connection]))
 			return null;
-		return $databases[$connection];
+		return $settings['DATABASES'][$connection];
 	}
 
 	public static function getProperty($connection, $property)

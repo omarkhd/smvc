@@ -10,12 +10,9 @@ class SessionRegistry extends Registry
 	
 	private function __construct()
 	{
-		$r = RequestRegistry::getInstance();
-		/* maybe this should be changed to a settings manager */
-		$session = $r->get('session_name');
-		if(!empty($session))
-			session_name($session);
-			
+		$settings = RequestRegistry::getInstance()->get('__settings__');
+		if(isset($settings['SESSION_NAME']) && $settings['SESSION_NAME'])
+			session_name($settings['SESSION_NAME']);
 		session_start();
 	}
 

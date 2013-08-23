@@ -2,10 +2,10 @@
 
 namespace smvc\view;
 use Exception, SplStack, SplQueue;
+use smvc\base\RequestRegistry;
 
 class View
 {
-	const dir = 'application/views';
 	private $name;
 	private $vars;
 
@@ -81,12 +81,18 @@ class View
 
 	public static final function exists($view)
 	{
-		return file_exists(self::path($view));
+		return self::path($view) == null ? false : true;
 	}
 
 	public static final function path($view, $ext = 'php')
 	{
-		return sprintf('%s/%s.%s', self::dir, $view, $ext);
+		$settings = RequestRegistry::getInstance()->get('__settings__');
+		foreach($settings['VIEW_DIRS'] as $lookup_path) {
+			$supposed_path = sprintf('%s/%s.%s', $lookup_path, $view, $ext);
+			if(file_exists($supposed_path))
+				return $supposed_path;
+		}
+		return null;
 	}
 
 	public final function current()
