@@ -1,4 +1,5 @@
 <?php
+namespace smvc;
 /* if used in a FrontController environment, this file should be included automatically, and the easiest way could
  * be done with the PHP's auto_prepend_file directive
  */
@@ -41,7 +42,7 @@ abstract class Bootstrap
 
 	private static function setDefaultSettings()
 	{
-		$dir_info = new SplFileInfo(__DIR__);
+		$dir_info = new \SplFileInfo(__DIR__);
 		self::$SMVC_APPLICATION_DIR = $dir_info->getPath() . '/application';
 	}
 
