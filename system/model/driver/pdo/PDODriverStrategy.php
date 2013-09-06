@@ -1,34 +1,32 @@
 <?php
+namespace smvc\model\driver\pdo;
+use smvc\model\driver\IDriverStrategy;
+use smvc\model\sql\IDriverSQLStrategy;
+use smvc\model\ResultSet;
+use PDO, PDOStatement, Exception;
 
-namespace smvc\model;
-use PDO, PDOStatement;
-
-class PDOCoreQueryStrategy implements IDriverCoreQueryStrategy
+abstract class PDODriverStrategy implements IDriverStrategy
 {
-	private $pdo;
+	protected $pdo = null;
+	protected $sqlStrategy = null;
 	
-	public function __construct(array $db_info)
+	public function __construct(array $connection_properties, IDriverSQLStrategy $sql_strategy)
 	{
-		$host = $db_info["host"];
-		$user = $db_info["user"];
-		$pass = $db_info["password"];
-		$name = $db_info["name"];
-		$set_names = $db_info["set_names"];
-
-		$dsn = "mysql:dbname=$name;host=$host";
-		$this->pdo = new PDO($dsn, $user, $pass);
-		$this->doNonQuery("set names '$set_names'");
+		$this->sqlStrategy = $sql_strategy;
+		$this->pdo = $this->instancePDO($connection_properties);
+		if($this->pdo == null || !($this->pdo instanceof PDO))
+			throw new Exception('PDO link instance could not be instantiated');
+		echo $this->sqlStrategy->setNames('utf8');
 	}
-	
+
+	abstract protected function instancePDO($connection_properties);
+
 	public function doQuery($sql, array $params = null)
 	{
 		$statement = $this->pdo->prepare($sql);
 		$this->setParameters($statement, $params);
 		$statement->execute();
-		$set = $statement->fetchAll(PDO::FETCH_ASSOC);
-		if(count($set) > 0)
-			return $set;
-		return null;
+		return new ResultSet($statement->fetchAll(PDO::FETCH_ASSOC));
 	}
 
 	public function doNonQuery($sql, array $params = null)
@@ -55,24 +53,29 @@ class PDOCoreQueryStrategy implements IDriverCoreQueryStrategy
 		return $this->pdo->lastInsertId();
 	}
 
-	public function begin()
+	public function beginTransaction()
 	{
 		return $this->pdo->beginTransaction();
 	}
 
-	public function commit()
+	public function commitTransaction()
 	{
 		return $this->pdo->commit();
 	}
 
-	public function rollback()
+	public function rollbackTransaction()
 	{
 		return $this->pdo->rollBack();
 	}
 
+	public function inTransaction()
+	{
+		return $this->pdo->inTransaction();
+	}
+
 	public function driver()
 	{
-		return 'pdo: ' . $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+		return $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 	}
 
 	public function close()
@@ -84,7 +87,6 @@ class PDOCoreQueryStrategy implements IDriverCoreQueryStrategy
 	{
 		if(!is_array($params))
 			return;
-
 		for($i = 0; $i < count($params); $i++)
 			$statement->bindParam($i + 1, $params[$i]);
 	}

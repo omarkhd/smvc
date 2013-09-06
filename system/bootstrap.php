@@ -55,9 +55,11 @@ abstract class Bootstrap
 		$settings = self::$APPLICATION_SETTINGS;
 		include $setings_file;
 		if(isset($APPLICATION_NAME) && $APPLICATION_NAME)
-			$settings['APPLICATION_NAME'] = null;
+			$settings['APPLICATION_NAME'] = $APPLICATION_NAME;
 		if(isset($APPLICATION_DESCRIPTION) && $APPLICATION_DESCRIPTION)
-			$settings['APPLICATION_DESCRIPTION'] = null;
+			$settings['APPLICATION_DESCRIPTION'] = $APPLICATION_DESCRIPTION;
+		if(isset($APPLICATION_NAMESPACE) && $APPLICATION_NAMESPACE)
+			$settings['APPLICATION_NAMESPACE'] = $APPLICATION_NAMESPACE;
 		if(isset($DATABASES) && is_array($DATABASES))
 			$settings['DATABASES'] = $DATABASES;
 		if(isset($SESSION_NAME) && $SESSION_NAME)

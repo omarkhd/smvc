@@ -1,64 +1,99 @@
 <?php
-
 namespace smvc\model;
 use smvc\base\RequestRegistry;
+use smvc\model\driver;
+use smvc\model\sql;
 use Exception;
 
-class DatabaseFactory
+abstract class DatabaseFactory
 {
-	private function __construct() {}
 	private static $strategies = array();
 
-	private static function instanceStrategy($connection)
+	private static $engineDrivers = array(
+		'mysql' => array('pdo')
+	);
+
+	private static function assertSupportedEngine($engine, $connection_name)
 	{
-		$database_properties = self::getProperties($connection);
-		if(!$database_properties)
-			throw new Exception('There is no connection configuration of "' . $connection . '"');
-		if(!isset($database_properties['engine']))
-			throw new Exception('No engine is specified for connection "' . $connection . '"');
-		$strategy = null;
-		$engine = $database_properties['engine'];
-		switch($engine) {
-			case 'mysql':
-				$strategy = new PDOCoreQueryStrategy($database_properties);
-				break;
-			case 'mysqli':
-				$strategy = new MySQLiCoreQueryStrategy($database_properties);
-				break;
-			default:
-				throw new Exception("Engine '$engine' not found for connection '$connection'");
-		}
-		return $strategy;
+		if(!in_array($engine, array_keys(self::$engineDrivers)))
+			throw new Exception(sprintf('Engine [%s] not supported in connection [%s]', $engine, $connection_name));
 	}
 
-	public static function getStrategy($conn)
+	private static function getSelectedEngineDriver($connection_properties)
 	{
-		if(!isset(self::$strategies[$conn]) || self::$strategies[$conn] == null)
-			self::$strategies[$conn] = self::instanceStrategy($conn);
-		return self::$strategies[$conn];
+		$engine_driver = reset(self::$engineDrivers[$connection_properties['engine']]);
+		if(isset($connection_properties['driver']))
+			$engine_driver = $connection_properties['driver'];
+		if(!in_array($engine_driver, self::$engineDrivers[$connection_properties['engine']])) {
+			throw new Exception(sprintf('Driver [%s] not supported for engine [%s]',
+				$engine_driver, $connection_properties['engine']));
+		}
+		return $engine_driver;
+	}
+
+	private static function instanceDriverStrategy($connection)
+	{
+		$connection_properties = self::getProperties($connection);
+		self::assertSupportedEngine($connection_properties['engine'], $connection);
+		$selected_driver = self::getSelectedEngineDriver($connection_properties);
+		if($selected_driver == 'pdo') {
+			if($connection_properties['engine'] == 'mysql')
+				return new driver\pdo\PDOMySQLDriverStrategy($connection_properties, self::getSQLStrategy($connection));
+		}
+		throw new Exception('Database driver strategy instance error');
+	}
+
+	private static function instanceSQLStrategy($connection)
+	{
+		$connection_properties = self::getProperties($connection);
+		self::assertSupportedEngine($connection_properties['engine'], $connection);
+		if($connection_properties['engine'] == 'mysql')
+			return new sql\MySQLStrategy($connection_properties);
+		throw new Exception('SQL strategy instance error');
+	}
+
+	public static function getDriverStrategy($connection)
+	{
+		if(!isset(self::$strategies[$connection]))
+			self::$strategies[$connection] = array();
+		if(!isset(self::$strategies[$connection]['driver']))
+			self::$strategies[$connection]['driver'] = self::instanceDriverStrategy($connection);
+		return self::$strategies[$connection]['driver'];
+	}
+
+	public static function getSQLStrategy($connection)
+	{
+		if(!isset(self::$strategies[$connection]))
+			self::$strategies[$connection] = array();
+		if(!isset(self::$strategies[$connection]['sql']))
+			self::$strategies[$connection]['sql'] = self::instanceSQLStrategy($connection);
+		return self::$strategies[$connection]['sql'];
 	}
 
 	public static function closeConnections()
 	{
-		foreach(self::$strategies as $strategy)
-			$strategy->close();
-		self::$strategies = null;
+		foreach(self::$strategies as $connection => $connection_strategies) {
+			if(isset($connection_strategies['driver'])) {
+				$connection_strategies['driver']->close();
+				unset(self::$strategies[$connection]['driver']);
+			}
+		}
 	}
 
-	public static function getProperties($connection)
+	private static function getProperties($connection)
 	{
 		$registry = RequestRegistry::getInstance();
 		$settings = $registry->get('__settings__');
 		if(!isset($settings['DATABASES'][$connection]))
-			return null;
+			throw new Exception(sprintf('No database configuration for connection [%s]', $connection));
 		return $settings['DATABASES'][$connection];
 	}
 
-	public static function getProperty($connection, $property)
+	private static function getProperty($connection, $property)
 	{
-		$dbinfo = self::getProperties($connection);
-		if(isset($dbinfo[$property]))
-			return $dbinfo[$property];
+		$database_info = self::getProperties($connection);
+		if(isset($database_info[$property]))
+			return $database_info[$property];
 		return null;
 	}
 }

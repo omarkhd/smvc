@@ -1,20 +1,34 @@
 <?php
 
 namespace smvc\model;
+use smvc\model\driver\IDriverStrategy;
+use smvc\model\sql\MySQLSQLStrategy;
 use Exception;
 
 class Model
 {
 	protected $tableName;
-	protected $idName;
-	private $strategy;
+	protected $pkName;
+	private $driver;
+	private $sql;
+	public $model;
 
-	public function __construct($table_name, $id_name = "id", $connection = "default")
+	public function __construct($table_name, $pk_name = 'id', $connection = 'default')
 	{
-		$dbname = DatabaseFactory::getProperty($connection, 'name');
-		$this->tableName = "{$dbname}.{$table_name}";
-		$this->idName = $id_name;
-		$this->strategy = DatabaseFactory::getStrategy($connection);
+		$this->tableName = $table_name;
+		$this->pkName = $pk_name;
+		$this->setDriverStrategy(DatabaseFactory::getDriverStrategy($connection));
+		$this->setSQLStrategy(DatabaseFactory::getSQLStrategy($connection));
+	}
+
+	protected function setDriverStrategy(driver\IDriverStrategy $strategy)
+	{
+		$this->driver = $strategy;
+	}
+
+	protected function setSQLStrategy(sql\IModelSQLStrategy $strategy)
+	{
+		$this->sql = $strategy;
 	}
 
 	public function getAll($start = null, $count = null)
@@ -278,20 +292,5 @@ class Model
 		else
 			throw new Exception('Cannot generate a correct query with this parameters');
 		return $params;
-	}
-
-	protected function setStrategy(IDriverCoreQueryStrategy $strategy)
-	{
-		$this->strategy = $strategy;
-	}
-
-	public function getStrategy()
-	{
-		return $this->strategy;
-	}
-
-	public function useConnectionOf(Model $model)
-	{
-		$this->setStrategy($model->getStrategy());
 	}
 }

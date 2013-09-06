@@ -1,24 +1,17 @@
 <?php
 
-namespace smvc\model;
-use mysqli, mysqli_stmt;
+namespace smvc\model\driver;
+use mysqli, mysqli_stmt, Exception;
 
-class MySQLiCoreQueryStrategy implements IDriverCoreQueryStrategy
+class MySQLiDriverStrategy implements IDriverStrategy
 {
 	private $link;
 	
 	public function __construct(array $db_info)
 	{
-		$host = $db_info["host"];
-		$user = $db_info["user"];
-		$pass = $db_info["password"];
-		$name = $db_info["name"];
-		$set_names = $db_info["set_names"];
-
-		$this->link = new mysqli($host, $user, $pass, $name);
+		$this->link = new mysqli($db_info['host'], $db_info['user'], $db_info['password'], $db_info['name']);
 		if(mysqli_connect_error())
 			throw new Exception(mysqli_connect_error());
-		$this->doNonQuery("set names '$set_names'");
 	}
 	
 	public function doQuery($sql, array $params = null)
@@ -109,7 +102,6 @@ class MySQLiCoreQueryStrategy implements IDriverCoreQueryStrategy
 	{
 		if(!is_array($params))
 			return;
-		
 		$types = '';
 		for($i = 0; $i < count($params); $i++, $types .= 's');
 		$func_params[] = $types;

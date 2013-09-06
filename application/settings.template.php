@@ -18,10 +18,10 @@ $APPLICATION_NAMESPACE = null;
 /*
  * DATABASES
  * connections used to access database engines, every connections should have a name, and you can have
- * several connections each one with different engine (mysql, mysqli)
+ * several connections each one with different engine (mysql, sqlite, postgresql)
  */
 $DATABASES = array(
-	'usr' => array(
+	'default' => array(
 		'engine' => '',
 		'host' => '',
 		'name' => '',
