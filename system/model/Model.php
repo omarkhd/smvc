@@ -1,15 +1,23 @@
 <?php
+/*
+ * author Omar Martín <omarkhd.mx@gmail.com>
+ */
 
 namespace smvc\model;
 use smvc\model\driver\IDriverStrategy;
-use smvc\model\sql\MySQLSQLStrategy;
 use Exception;
 
 class Model
 {
 	protected $tableName;
 	protected $pkName;
+	/*
+	 * @var \smvc\model\driver\IDriverStratey Strategy to execute queries and basic transaction support
+	 */
 	private $driver;
+	/*
+	 * @var \smvc\model\sql\IModelSQLStrategy Strategy used to generate the model's sql queries
+	 */
 	private $sql;
 	public $model;
 
@@ -31,266 +39,182 @@ class Model
 		$this->sql = $strategy;
 	}
 
-	public function getAll($start = null, $count = null)
+	protected function doQuery($sql, array $params = array())
 	{
-		$sql = "select * from $this";
-		if(is_integer($start) && is_integer($count))
-			$sql .= " limit $start, $count";
-		else if(is_integer($start))
-			$sql .= " limit $start";
-		
+		return $this->driver->doQuery($sql, $params);
+	}
+
+	protected function doScalar($sql, array $params = array())
+	{
+		return $this->driver->doScalar($sql, $params);
+	}
+
+	protected function doNonQuery($sql, array $params = array())
+	{
+		return $this->driver->doNonQuery($sql, $params);
+	}
+
+	public function getAll()
+	{
+		$sql = $this->sql->getAll($this->tableName);
 		return $this->doQuery($sql);
 	}
 
-	public function get($id)
+	public function getBy(array $criteria)
 	{
-		$rows = $this->getBy($this->idName, $id);
-		if($rows != null)
-			return $rows[0];
+		$sql = $this->sql->getBy($this->tableName, $criteria);
+		return $this->doQuery($sql, array_values($criteria));
 	}
 
-	public function getBy($col_name, $value = true)
+	public function get($pk)
 	{
-		$params = $this->normalizeParams($col_name, $value);
-		$op = (bool) $value ? 'and' : 'or';
-
-		$condition = implode(" = ? $op ", array_keys($params)) . ' = ?';
-		$sql = "select * from $this where $condition";
-		return $this->doQuery($sql, array_values($params));
-	}
-	
-	public function getUnique($field, $value)
-	{
-		$tuples = $this->getBy($field, $value);
-		if(isset($tuples[0]))
-			return $tuples[0];
-		return null;
+		$tuples = $this->getBy(array($this->pkName => $pk));
+		return $tuples->getFirst();
 	}
 
-	public function getAllLike(array $criterias, $empty_gets_all = true)
+	public function getUnique(array $criteria)
 	{
-		if(!is_array($criterias) || count($criterias) == 0)
-			return $empty_gets_all ? $this->getAll() : null;
-
-		$sql = "select * from $this where ";
-		$params = array();
-		foreach($criterias as $column => $criteria)
-		{
-			$sql .= $column . " like ? or ";
-			$params[] = "%$criteria%";
-		}
-
-		$sql = substr($sql, 0, strlen($sql) - 3);
-		return $this->doQuery($sql, $params);
+		$tuples = $this->getBy($criteria);
+		return $tuples->getFirst();
 	}
 
-	public function insert(array $params)
+	public function insert(array $values)
 	{
-		/*
-			this method automatically detects if the array
-			is associative or numeric, if it is associative,
-			it creates column names for the insert, if not, just
-			puts them in order without column names
-		*/
-			
-		$by_columns = false;
-		$keys = null;
-		$values = array_values($params);
-		$length = count($params);
-
-		if($this->isAssociative($params)) {
-			$by_columns = true;
-			$keys = array_keys($params);
-		}
-		
-		$sql = "insert into $this ";
-		$sql .= $by_columns ? '(' . implode(', ', $keys) . ') ' : '';
-		$sql .= 'values (' . implode(', ', array_fill(0, $length, '?')) . ')';
-		return $this->doNonQuery($sql, $values) > 0;
+		$sql = $this->sql->insert($this->tableName, $values);
+		echo $sql;
+		return $this->doNonQuery($sql, array_values($values)) > 0;
 	}
 
-	public function deleteBy($col_name, $value = true)
+	public function truncate()
 	{
-		$params = $this->normalizeParams($col_name, $value);
-		$op = (bool) $value ? 'and' : 'or';
-
-		$condition = implode(" = ? $op ", array_keys($params)) . ' = ?';
-		$sql = "delete from $this where $condition";
-
-		return $this->doNonQuery($sql, array_values($params));
-	}
-
-	public function delete($value)
-	{
-		return $this->deleteBy($this->idName, $value) > 0;
+		return $this->doNonQuery($this->sql->truncate($this->tableName));
 	}
 
 	public function deleteAll()
 	{
-		$sql = "delete from $this";
-		return $this->doNonQuery($sql);
+		return $this->doNonQuery($this->sql->deleteAll($this->tableName));
 	}
 
-	public function update($id, $what, $new = null)
+	public function deleteBy(array $criteria)
 	{
-		if(is_array($what) && $this->isAssociative($what))
-			return $this->updateBy(array($this->idName => $id), $what) > 0;
-		return $this->updateBy($this->idName, $id, $what, $new) > 0;
+		$sql = $this->sql->deleteBy($this->tableName, $criteria);
+		return $this->doNonQuery($sql, array_values($criteria));
 	}
 
-	#params 1) criteria_array 2) update_array 3) every condition or not
-	public function updateBy($col_criteria, $criteria, $what = true, $new = null)
+	public function delete($pk)
 	{
-		#for backwards compatibility
-		if(!(is_array($col_criteria) || is_array($criteria))) {
-			if(func_num_args() != 4)
-				throw new Exception('Deprecated update need 4 parameters');
-			$sql = "update $this set $what = ? where $col_criteria = ?";
-			return $this->doNonQuery($sql, array($new, $criteria));
-		}
-		
-		$condition_params = $this->normalizeParams($col_criteria, null);
-		$set_params = $this->normalizeParams($criteria, null);
-		$op = (bool) $what ? 'and' : 'or';
+		return $this->deleteBy(array($this->pkName => $pk)) > 0;
+	}
 
-		$updates = implode(' = ?, ', array_keys($set_params)) . ' = ?';
-		$conditions = implode(" = ? $op ", array_keys($condition_params)) . ' = ?';
+	public function updateAll(array $values)
+	{
+		$sql = $this->sql->updateAll($this->tableName, $values);
+		return $this->doNonQuery($sql, array_values($values));
+	}
+
+	public function updateBy(array $criteria, array $values)
+	{
 		$sql_params = array();
-		foreach(array_values($set_params) as $item) $sql_params[] = $item;
-		foreach(array_values($condition_params) as $item) $sql_params[] = $item;
-
-		$sql = "update $this set $updates where $conditions";
+		foreach(array_values($values) as $item) $sql_params[] = $item;
+		foreach(array_values($criteria) as $item) $sql_params[] = $item;
+		$sql = $this->sql->updateBy($this->tableName, $criteria, $values);
 		return $this->doNonQuery($sql, $sql_params);
 	}
 
-	public function exists($id)
+	public function update($pk, array $values)
 	{
-		return $this->existsBy($this->idName, $id);
+		return $this->updateBy(array($this->pkName => $pk), $values) > 0;
 	}
 
-	public function existsBy($field, $value)
+	public function existsBy(array $criteria)
 	{
-		$sql =	"select count(*) from $this
-				where $field = ?";
-		return $this->doScalar($sql, array($value)) > 0;
+		$sql = $this->sql->existsBy($this->tableName, $criteria);
+		return (bool) $this->doScalar($sql, array_values($criteria));
 	}
 
-	protected function doQuery($sql, array $params = null)
+	public function exists($pk)
 	{
-		return $this->strategy->doQuery($sql, $params);
-	}
-
-	protected function doScalar($sql, array $params = null)
-	{
-		return $this->strategy->doScalar($sql, $params);
-	}
-
-	protected function doNonQuery($sql, array $params = null)
-	{
-		return $this->strategy->doNonQuery($sql, $params);
+		return $this->existsBy(array($this->pkName => $pk));
 	}
 
 	public function lastInsertId()
 	{
-		return $this->strategy->lastInsertId();
-	}
-
-	public function error()
-	{
-		$error = $this->doQuery('show errors');
-		if(isset($error[0]))
-			return $error[0];
-		return null;
+		return $this->doScalar($this->sql->lastInsertId());
 	}
 
 	public function driver()
 	{
-		return $this->strategy->driver();
+		return $this->driver->driver();
 	}
 
 	public function begin()
 	{
-		return $this->strategy->begin();
+		return $this->driver->beginTransaction();
 	}
 
 	public function commit()
 	{
-		return $this->strategy->commit();
+		return $this->driver->commitTransaction();
 	}
 
 	public function rollback()
 	{
-		return $this->strategy->rollback();
+		return $this->driver->rollbackTransaction();
 	}
 
 	public function now()
 	{
-		return $this->doScalar('select now()');
+		return $this->doScalar($this->sql->now());
 	}
 
 	public function today()
 	{
-		return $this->doScalar('select current_date');
+		return $this->doScalar($this->sql->today());
 	}
 
-	public function count($what = null)
+	public function currentTime()
 	{
-		if($what == null)
-			$what = '*';			
-		return $this->doScalar("select count($what) from $this");
+		return $this->doScalar($this->sql->currentTime());
 	}
 
-	public function max($expr)
+	public function count($field = null, array $criteria = array())
 	{
-		return $this->doScalar("select max($expr) from $this");
+		$sql = $this->sql->count($this->tableName, $field, $criteria);
+		return $this->doScalar($sql, array_values($criteria));
 	}
 
-	public function min($expr)
+	public function max($field, array $criteria = array())
 	{
-		return $this->doScalar("select min($expr) from $this");
+		$sql = $this->sql->max($this->tableName, $field, $criteria);
+		return $this->doScalar($sql, array_values($criteria));
 	}
 
-	public function sum($expr)
+	public function min($field, array $criteria = array())
 	{
-		return $this->doScalar("select sum($expr) from $this");
+		$sql = $this->sql->min($this->tableName, $field, $criteria);
+		return $this->doScalar($sql, array_values($criteria));
 	}
 
-	public function avg($expr)
+	public function sum($field, array $criteria = array())
 	{
-		return $this->doScalar("select avg($expr) from $this");
+		$sql = $this->sql->sum($this->tableName, $field, $criteria);
+		return $this->doScalar($sql, array_values($criteria));
 	}
-	
+
+	public function avg($field, array $criteria = array())
+	{
+		$sql = $this->sql->avg($this->tableName, $field, $criteria);
+		return $this->doScalar($sql, array_values($criteria));
+	}
+
+	public function distinct(array $fields, array $criteria = array())
+	{
+		$sql = $this->sql->distinct($this->tableName, $fields, $criteria);
+		return $this->doQuery($sql, array_values($criteria));
+	}
+
 	public function __toString()
 	{
-		return $this->tableName;
-	}
-
-	public function distinct($what)
-	{
-		if(is_array($what))
-			$what = implode(', ', $what);
-		return $this->doQuery("select distinct $what from $this");
-	}
-
-	private function isAssociative(array $to_test)
-	{
-		if(count($to_test) == 0)
-			return false;
-		foreach(array_keys($to_test) as $key)
-			if(!is_integer($key))
-				return true;
-		return false;
-	}
-
-	private function normalizeParams($first, $second)
-	{
-		$params = array();
-		if(!(is_array($first) || is_array($second)))
-			$params[$first] = $second;
-		else if(is_array($first) && $this->isAssociative($first))
-			$params = $first;
-		else
-			throw new Exception('Cannot generate a correct query with this parameters');
-		return $params;
+		return (string) $this->sql->tableFQN($this->tableName);
 	}
 }

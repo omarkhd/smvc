@@ -20,9 +20,8 @@ class SubmodelManager
 
 	public function __get($property)
 	{
-		if(!isset($this->container[$property])) {
+		if(!isset($this->container[$property]))
 			throw new Exception(sprintf('Not a registered model named [%s] in [%s]', $this->master, $property));
-		}
 		$submodel = $this->container[$property];
 		$submodel->setStrategy($this->master->getStrategy());
 		return $submodel;

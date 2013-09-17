@@ -16,12 +16,16 @@ abstract class PDODriverStrategy implements IDriverStrategy
 		$this->pdo = $this->instancePDO($connection_properties);
 		if($this->pdo == null || !($this->pdo instanceof PDO))
 			throw new Exception('PDO link instance could not be instantiated');
-		echo $this->sqlStrategy->setNames('utf8');
+		if(isset($connection_properties['set_names'])) {
+			if($set_names = $this->sqlStrategy->setNames($connection_properties['set_names'])) {
+				$this->doNonQuery($set_names);
+			}
+		}
 	}
 
 	abstract protected function instancePDO($connection_properties);
 
-	public function doQuery($sql, array $params = null)
+	public function doQuery($sql, array $params = array())
 	{
 		$statement = $this->pdo->prepare($sql);
 		$this->setParameters($statement, $params);
@@ -29,7 +33,7 @@ abstract class PDODriverStrategy implements IDriverStrategy
 		return new ResultSet($statement->fetchAll(PDO::FETCH_ASSOC));
 	}
 
-	public function doNonQuery($sql, array $params = null)
+	public function doNonQuery($sql, array $params = array())
 	{
 		$statement = $this->pdo->prepare($sql);
 		$this->setParameters($statement, $params);
@@ -37,7 +41,7 @@ abstract class PDODriverStrategy implements IDriverStrategy
 		return $statement->rowCount();
 	}
 
-	public function doScalar($sql, array $params = null)
+	public function doScalar($sql, array $params = array())
 	{
 		$statement = $this->pdo->prepare($sql);
 		$this->setParameters($statement, $params);
@@ -83,9 +87,9 @@ abstract class PDODriverStrategy implements IDriverStrategy
 		$this->pdo = null;
 	}
 	
-	private function setParameters(PDOStatement $statement, array $params =  null)
+	private function setParameters(PDOStatement $statement, array $params)
 	{
-		if(!is_array($params))
+		if(!is_array($params) || count($params) == 0)
 			return;
 		for($i = 0; $i < count($params); $i++)
 			$statement->bindParam($i + 1, $params[$i]);
