@@ -64,6 +64,10 @@ abstract class Bootstrap
 			$settings['DATABASES'] = $DATABASES;
 		if(isset($SESSION_NAME) && $SESSION_NAME)
 			$settings['SESSION_NAME'] = $SESSION_NAME;
+		if(isset($STATIC_DIR) && $STATIC_DIR)
+			$settings['STATIC_DIR'] = $STATIC_DIR;
+		if(isset($STATIC_DEFAULT_PATH) && $STATIC_DEFAULT_PATH)
+			$settings['STATIC_DEFAULT_PATH'] = $STATIC_DEFAULT_PATH;
 		if(isset($LOADERS) && is_array($LOADERS)) {
 			foreach($LOADERS as $loader) {
 				if(is_callable($loader))
@@ -86,6 +90,8 @@ abstract class Bootstrap
 		$settings['DATABASES'] = array();
 		$settings['SESSION_NAME'] = null;
 		$settings['VIEW_DIRS'] = array(self::$SMVC_APPLICATION_DIR . '/views');
+		$settings['STATIC_DIR'] = 'static';
+		$settings['STATIC_DEFAULT_PATH'] = '';
 		self::$APPLICATION_SETTINGS = $settings;
 	}
 

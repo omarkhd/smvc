@@ -105,4 +105,25 @@ class View
 		$this->block->register($view);
 		$this->loadqueue->push($view);
 	}
+
+	private function __static__($file)
+	{
+		$settings = RequestRegistry::getInstance()->get('__settings__');
+		$filepath = sprintf('%s/%s/%s', $settings['APPLICATION_DIR'], $settings['STATIC_DIR'], $file);
+		if(file_exists($filepath)) {
+			return sprintf('/%s/%s', $settings['STATIC_DIR'], $file);
+		}
+		else if($settings['STATIC_DEFAULT_PATH']) {
+			return sprintf('%s/%s', $settings['STATIC_DEFAULT_PATH'], $file);
+		}
+		return $file;
+	}
+
+	public function __call($method, array $parameters)
+	{
+		if($method == 'static') {
+			return call_user_func_array(array($this, '__static__'), $parameters);
+		}
+		throw new Exception(sprintf('Call to undefined method %s', $method));
+	}
 }

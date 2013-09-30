@@ -52,3 +52,17 @@ $LOADERS = array();
  * it will be used the 'views' subdirectory of the application directory
  */
 $VIEW_DIRS = array();
+
+/*
+ * STATIC_DIR
+ * this directory is used to load static files when the static() method is used inside a view, this folder
+ * is considered to be inside the project's document root, thus relative to it
+ */
+$STATIC_DIR = 'static';
+
+/*
+ * STATIC_DEFAULT_PATH
+ * this path can be used when the static files are in another domain, if the file is not found inside the
+ * configured static dir, the static() method will return a path formed with this default path
+ */
+$STATIC_DEFAULT_PATH = '';

@@ -43,7 +43,7 @@ abstract class PageController
 	
 	protected function init() {}
 	protected function before() {}
-	protected function execute() {}
+	protected abstract function execute();
 	protected function after() {}
 
 	protected function onException(Exception $exception)
