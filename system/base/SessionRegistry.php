@@ -23,7 +23,7 @@ class SessionRegistry extends Registry
 
 	public static function destroy()
 	{
-		$_SESSION = array();
+		self::getInstance()->clear();
 		session_unset();
 		session_destroy();
 		self::$instance = null;
@@ -33,7 +33,6 @@ class SessionRegistry extends Registry
 	{
 		if(self::$instance == null)
 			self::$instance = new SessionRegistry();
-
 		return self::$instance;
 	}
 
@@ -41,7 +40,6 @@ class SessionRegistry extends Registry
 	{
 		if(isset($_SESSION[$key]))
 			return $_SESSION[$key];
-
 		return null;
 	}
 

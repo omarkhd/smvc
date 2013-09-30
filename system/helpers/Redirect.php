@@ -1,5 +1,6 @@
 <?php
 namespace smvc\helpers;
+use smvc\base\RequestRegistry;
 
 abstract class Redirect
 {
@@ -8,7 +9,6 @@ abstract class Redirect
 		$tmp = trim($url);
 		if(strlen($tmp) == 0)
 			return;
-		
 		header(sprintf('Location: %s%s', $url, self::querystring($vars)));
 		die();
 	}
@@ -32,7 +32,7 @@ abstract class Redirect
 
 	public static function home(array $vars = array())
 	{
-		self::to('index.php');
+		self::to('/');
 	}
 	
 	private static function querystring(array $vars)

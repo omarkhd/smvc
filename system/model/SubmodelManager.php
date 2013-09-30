@@ -23,7 +23,7 @@ class SubmodelManager
 		if(!isset($this->container[$property]))
 			throw new Exception(sprintf('Not a registered model named [%s] in [%s]', $this->master, $property));
 		$submodel = $this->container[$property];
-		$submodel->setStrategy($this->master->getStrategy());
+		$submodel->setDriverStrategy($this->master->getDriverStrategy());
 		return $submodel;
 	}
 }

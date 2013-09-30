@@ -27,11 +27,17 @@ class Model
 		$this->pkName = $pk_name;
 		$this->setDriverStrategy(DatabaseFactory::getDriverStrategy($connection));
 		$this->setSQLStrategy(DatabaseFactory::getSQLStrategy($connection));
+		$this->model = new SubmodelManager($this);
 	}
 
-	protected function setDriverStrategy(driver\IDriverStrategy $strategy)
+	public function setDriverStrategy(driver\IDriverStrategy $strategy)
 	{
 		$this->driver = $strategy;
+	}
+
+	public function getDriverStrategy()
+	{
+		return $this->driver;
 	}
 
 	protected function setSQLStrategy(sql\IModelSQLStrategy $strategy)
