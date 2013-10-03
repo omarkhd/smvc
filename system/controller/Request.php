@@ -16,29 +16,61 @@ class Request
 
 	public function get($key = null)
 	{
-		$argc = func_num_args();
-		$value = null;
-		
-		if($argc > 1) {
-			$value = array();
-			foreach(func_get_args() as $var) {
-				$value[$var] = null;
-				if(isset($this->container[$var]))
-					$value[$var] = $this->container[$var];
-			}
-		}
-			
-		else if($key == null)
-			$value = $this->container;
-			
-		else if(isset($this->container[$key]))
-			$value = $this->container[$key];
-			
-		return $value;
+		return isset($this->container[$key]) ? $this->container[$key] : null;
 	}
 	
 	public function set($key, $value)
 	{
 		$this->container[$key] = $value;
+	}
+
+	public function clear()
+	{
+		$this->container = array();
+	}
+
+	public function src()
+	{
+		return $this->server('REMOTE_ADDR');
+	}
+
+	public function dst()
+	{
+		return $this->server('SERVER_ADDR');
+	}
+
+	public function port()
+	{
+		return $this->server('REMOTE_PORT');
+	}
+
+	public function method()
+	{
+		return $this->server('REQUEST_METHOD');
+	}
+
+	public function path()
+	{
+		return $this->server('PHP_SELF');
+	}
+
+	public function referer()
+	{
+		return $this->server('HTTP_REFERER');
+	}
+
+	public function agent()
+	{
+		return $this->server('HTTP_USER_AGENT');
+	}
+
+	private function server($key)
+	{
+		return isset($_SERVER[$key]) ? $_SERVER[$key] : null;
+	}
+
+	public function dump()
+	{
+		return var_export($this->container, true);
 	}
 }

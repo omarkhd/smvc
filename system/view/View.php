@@ -7,7 +7,7 @@ use smvc\base\RequestRegistry;
 class View
 {
 	private $name;
-	private $vars;
+	protected $vars;
 
 	private $loadstack;
 	private $loadqueue;
