@@ -73,4 +73,14 @@ class Request
 	{
 		return var_export($this->container, true);
 	}
+
+	public function isGet()
+	{
+		return $this->method() == 'GET';
+	}
+
+	public function isPost()
+	{
+		return $this->method() == 'POST';
+	}
 }
