@@ -12,7 +12,8 @@ abstract class DatabaseFactory
 	private static $engineDrivers = array(
 		'mysql' => array('pdo', 'mysqli'),
 		'sqlite' => array('pdo'),
-		'sqlite3' => array('pdo')
+		'sqlite3' => array('pdo'),
+		'postgresql' => array('pdo')
 	);
 
 	private static function assertSupportedEngine($engine, $connection_name)
@@ -43,6 +44,8 @@ abstract class DatabaseFactory
 				return new driver\pdo\PDOMySQLDriverStrategy($connection_properties, self::getSQLStrategy($connection));
 			else if(in_array($connection_properties['engine'], array('sqlite', 'sqlite3')))
 				return new driver\pdo\PDOSQLiteDriverStrategy($connection_properties, self::getSQLStrategy($connection));
+			else if($connection_properties['engine'] == 'postgresql')
+				return new driver\pdo\PDOPostgreSQLDriverStrategy($connection_properties, self::getSQLStrategy($connection));
 		}
 		else if($selected_driver == 'mysqli') {
 			return new driver\MySQLiDriverStrategy($connection_properties, self::getSQLStrategy($connection));
@@ -59,6 +62,8 @@ abstract class DatabaseFactory
 			return new sql\MySQLStrategy($connection_properties);
 		else if(in_array($connection_properties['engine'], array('sqlite', 'sqlite3')))
 			return new sql\SQLiteStrategy($connection_properties);
+		else if($connection_properties['engine'] == 'postgresql')
+			return new sql\PostgreSQLStrategy($connection_properties);
 		throw new Exception('SQL strategy instance error');
 	}
 

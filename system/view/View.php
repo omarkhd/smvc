@@ -109,7 +109,7 @@ class View
 	private function __static__($file)
 	{
 		$settings = RequestRegistry::getInstance()->get('__settings__');
-		$filepath = sprintf('%s/%s/%s', $settings['APPLICATION_DIR'], $settings['STATIC_DIR'], $file);
+		$filepath = sprintf('%s/%s/%s', $_SERVER['DOCUMENT_ROOT'], $settings['STATIC_DIR'], $file);
 		$static_path = null;
 		if(file_exists($filepath)) {
 			$static_path = sprintf('/%s/%s', $settings['STATIC_DIR'], $file);
