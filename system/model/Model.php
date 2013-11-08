@@ -87,7 +87,6 @@ class Model
 	public function insert(array $values)
 	{
 		$sql = $this->sql->insert($this->tableName, $values);
-		echo $sql;
 		return $this->doNonQuery($sql, array_values($values)) > 0;
 	}
 

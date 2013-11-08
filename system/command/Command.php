@@ -36,9 +36,4 @@ abstract class Command
 	{
 		return null;
 	}
-
-	public function loadHelper($helper)
-	{
-		ApplicationHelper::loadHelper($helper);
-	}
 }
