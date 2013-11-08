@@ -30,6 +30,11 @@ class Model
 		$this->model = new SubmodelManager($this);
 	}
 
+	public function getPkName()
+	{
+		return $this->pkName;
+	}
+
 	public function setDriverStrategy(driver\IDriverStrategy $strategy)
 	{
 		$this->driver = $strategy;
@@ -144,7 +149,7 @@ class Model
 
 	public function lastInsertId()
 	{
-		return $this->doScalar($this->sql->lastInsertId());
+		return $this->doScalar($this->sql->lastInsertId($this));
 	}
 
 	public function driver()

@@ -22,8 +22,8 @@ class PostgreSQLStrategy extends StandardSQLStrategy
 		return sprintf('"%s"', $identifier);
 	}
 
-	public function lastInsertId()
+	public function lastInsertId($model = null)
 	{
-		return 'select last_insert_id()';
+		return sprintf('select currval(pg_get_serial_sequence(\'%s\', \'%s\'))', $model, $model->getPkName());
 	}
 }
