@@ -1,7 +1,8 @@
 <?php
 namespace smvc\controller;
+use smvc\base\Registry;
 
-class Request
+class Request implements Registry
 {
 	private $container;
 

@@ -4,7 +4,7 @@ namespace smvc\base;
 /*
  * a registry for the session scope
  */
-class SessionRegistry extends Registry
+class SessionRegistry implements Registry
 {
 	private static $instance = null;
 	

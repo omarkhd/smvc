@@ -16,6 +16,7 @@ abstract class PDODriverStrategy implements IDriverStrategy
 		$this->pdo = $this->instancePDO($connection_properties);
 		if($this->pdo == null || !($this->pdo instanceof PDO))
 			throw new Exception('PDO link instance could not be instantiated');
+		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		if(isset($connection_properties['set_names'])) {
 			if($set_names = $this->sqlStrategy->setNames($connection_properties['set_names'])) {
 				$this->doNonQuery($set_names);

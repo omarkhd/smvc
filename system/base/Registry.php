@@ -1,9 +1,9 @@
 <?php
 namespace smvc\base;
 
-abstract class Registry
+interface Registry
 {
-	public abstract function get($key);
-	public abstract function set($key, $val);
-	public abstract function clear();
+	public function get($key);
+	public function set($key, $val);
+	public function clear();
 }

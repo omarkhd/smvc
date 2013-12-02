@@ -4,7 +4,7 @@ namespace smvc\base;
 /*
  * a registry for the request scope
  */
-class RequestRegistry extends Registry
+class RequestRegistry implements Registry
 {
 	private static $Instance = null;
 	private $Container;
