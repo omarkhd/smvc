@@ -47,4 +47,9 @@ class SessionRegistry implements Registry
 	{
 		$_SESSION[$key] = $value;
 	}
+
+	public function dump()
+	{
+		return var_export($_SESSION, true);
+	}
 }
