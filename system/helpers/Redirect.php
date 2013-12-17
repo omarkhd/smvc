@@ -19,9 +19,9 @@ abstract class Redirect
 		die();
 	}
 
-	public static function here(array $vars = array())
+	public static function here($keep_method = false, array $vars = array())
 	{
-		self::refresh();
+		$keep_method ? self::refresh() : self::to($_SERVER['PHP_SELF']);
 	}
 
 	public static function command($command, array $vars = array())
@@ -30,16 +30,16 @@ abstract class Redirect
 		self::to('index.php', $vars);
 	}
 
-	public static function home(array $vars = array())
+	public static function home($relative_path = null, array $vars = array())
 	{
-		self::to('/');
+		self::to(sprintf('/%s', $relative_path), $vars);
 	}
 	
-	private static function querystring(array $vars)
+	private static function querystring(array $vars = array())
 	{
 		$querystring = array();
 		foreach($vars as $key => $value)
 			$querystring[] = sprintf('%s=%s', $key, $value);
-		return sprintf('?%s', implode('&', $querystring));
+		return $querystring ? sprintf('?%s', implode('&', $querystring)) : '';
 	}
 }
